@@ -1,0 +1,258 @@
+<!DOCTYPE html><html lang="pt-BR"><head>
+  <script>/* gate-bootstrap: capture an early login submit before the remote gate wires up, so the first click is never lost */
+  (function(){function h(e){var f=e.target;if(f&&f.id==='gate-form'&&!window.MembershipGate){e.preventDefault();e.stopImmediatePropagation();window.__gateEarlySubmit=true;}}window.addEventListener('submit',h,true);window.__gateBootstrapDisarm=function(){window.removeEventListener('submit',h,true);};})();</script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Prompt IA — Gênesis IA</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' fill='%23f2ece0'/%3E%3Crect x='3' y='3' width='13' height='13' fill='%23d8362a'/%3E%3Ccircle cx='22.5' cy='9.5' r='6.5' fill='%231f4ea1'/%3E%3Cpolygon points='9.5,29 3,16 16,16' fill='%23f2b705'/%3E%3Crect x='16' y='16' width='13' height='13' fill='%2315110c'/%3E%3C/svg%3E">
+  <link rel="stylesheet" href="css/styles.css">
+  <link rel="preconnect" href="https://gate.appsbrasil.store">
+  <link rel="preload" href="https://gate.appsbrasil.store/v1/membership-gate.js" as="script">
+</head>
+<body>
+  <div class="bg-gradient"></div>
+
+  <!-- MEMBERSHIP GATE -->
+  <div id="gate-screen" class="screen active">
+    <div class="gate-container">
+      <div class="gate-header">
+        <div class="gate-mark">
+          <span class="logomark" aria-hidden="true">
+            <span class="lm-sq"></span>
+            <span class="lm-ci"></span>
+            <span class="lm-tr"></span>
+          </span>
+        </div>
+        <h1 class="gradient-text">Prompt<em> IA</em></h1>
+        <p class="subtitle">Construtor visual de prompts de imagem para Midjourney, DALL·E 3, Flux e Stable Diffusion.</p>
+        <p class="community-badge">Exclusivo para membros da Comunidade Gênesis IA</p>
+      </div>
+
+      <form id="gate-form" class="gate-form">
+        <div class="form-group">
+          <label for="gate-email">Seu e-mail cadastrado</label>
+          <input type="email" id="gate-email" placeholder="seu@email.com" autocomplete="email">
+        </div>
+        <div class="form-group">
+          <label for="gate-phone">Seu WhatsApp (com DDD)</label>
+          <input type="tel" id="gate-phone" placeholder="11999999999" autocomplete="tel">
+        </div>
+        <button type="submit" id="gate-submit" class="btn-primary">
+          <span class="btn-text">Verificar acesso</span>
+          <span class="btn-loading" style="display:none;">Verificando...</span>
+        </button>
+        <p id="gate-error" class="error-message" style="display:none;"></p>
+      </form>
+
+      <p class="gate-footer">Ainda não é membro? <a href="https://comunidade-genesisia.appsbrasil.store" target="_blank" rel="noopener noreferrer">Conheça a Comunidade Gênesis IA</a></p>
+    </div>
+  </div>
+
+  <!-- API KEY SETUP -->
+  <div id="key-screen" class="screen">
+    <div class="key-container">
+      <h2>Configure sua chave de API</h2>
+      <p class="subtitle">Sua chave fica salva apenas no seu navegador. Nunca é enviada para nossos servidores.</p>
+
+      <div id="key-inputs" class="key-inputs">
+        <!-- Dynamically populated by api-key-manager.js -->
+      </div>
+
+      <div class="key-actions">
+        <button id="key-continue" class="btn-primary" disabled="">Continuar para a ferramenta</button>
+        <button id="key-skip" class="btn-secondary">Pular por enquanto</button>
+      </div>
+
+      <details class="key-info">
+        <summary>Como consigo uma chave de API?</summary>
+        <div class="key-info-content">
+          <p><strong>OpenAI:</strong> Acesse <code>platform.openai.com/api-keys</code> e crie uma nova chave.</p>
+          <p><strong>OpenRouter:</strong> Acesse <code>openrouter.ai/keys</code> e crie uma chave (dá acesso a vários modelos com uma só chave).</p>
+        </div>
+      </details>
+    </div>
+  </div>
+
+  <!-- MAIN APPLICATION -->
+  <div id="app-screen" class="screen">
+    <header class="app-header">
+      <div class="header-left">
+        <span class="logomark" aria-hidden="true">
+          <span class="lm-sq"></span>
+          <span class="lm-ci"></span>
+          <span class="lm-tr"></span>
+        </span>
+        <h1 class="app-title">Prompt<em> IA</em></h1>
+      </div>
+      <div class="header-right">
+        <a aria-label="Sobre" class="btn-icon" href="/about" title="Sobre esta ferramenta">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+        </a>
+        <button id="manage-keys-btn" class="btn-icon" title="Gerenciar chave de API" aria-label="Gerenciar chave de API">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 1 1-7.778 7.778 5.5 5.5 0 0 1 7.777-7.777zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3m-3.5 3.5L19 4"></path></svg>
+        </button>
+        <button id="logout-btn" class="btn-icon" title="Sair" aria-label="Sair">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg>
+        </button>
+      </div>
+    </header>
+
+    <main class="app-main">
+      <p id="no-key-note" class="no-key-note">
+        Você ainda não configurou uma chave de API. <a href="#" id="no-key-cta">Adicionar chave agora</a>
+      </p>
+
+      <div class="builder">
+        <!-- LEFT: inputs -->
+        <section class="panel panel-input" aria-label="Configuração do prompt">
+          <div class="panel-head"><span class="label">Construa seu prompt</span></div>
+          <div class="panel-body">
+
+            <div class="field">
+              <div class="field-label"><span class="glyph glyph-square"></span> Modelo de destino</div>
+              <div class="seg" id="model-seg" role="radiogroup" aria-label="Modelo de imagem">
+                <button type="button" class="active" data-model="midjourney" role="radio" aria-checked="true">Midjourney</button>
+                <button type="button" data-model="dalle" role="radio" aria-checked="false">DALL·E 3</button>
+                <button type="button" data-model="flux" role="radio" aria-checked="false">Flux</button>
+                <button type="button" data-model="sd" role="radio" aria-checked="false">Stable Diffusion</button>
+              </div>
+            </div>
+
+            <div class="field">
+              <div class="field-label"><span class="glyph glyph-circle"></span> Sua ideia</div>
+              <textarea id="idea-input" class="idea-input" rows="4" placeholder="Ex: um astronauta tomando café numa cafeteria em Marte, ao pôr do sol" maxlength="600"></textarea>
+              <p class="char-hint"><span id="idea-count">0</span>/600</p>
+            </div>
+
+            <div class="field">
+              <div class="field-label"><span class="glyph glyph-tri"></span> Estilo</div>
+              <div class="chips" data-group="style"></div>
+            </div>
+
+            <div class="field">
+              <div class="field-label"><span class="glyph glyph-square"></span> Iluminação</div>
+              <div class="chips" data-group="lighting"></div>
+            </div>
+
+            <div class="field">
+              <div class="field-label"><span class="glyph glyph-circle"></span> Clima / Atmosfera</div>
+              <div class="chips" data-group="mood"></div>
+            </div>
+
+            <div class="field">
+              <div class="field-label"><span class="glyph glyph-tri"></span> Composição</div>
+              <div class="chips" data-group="composition"></div>
+            </div>
+
+            <div class="field">
+              <div class="field-label"><span class="glyph glyph-square"></span> Paleta de cores</div>
+              <div class="chips" data-group="palette"></div>
+            </div>
+
+            <div class="field">
+              <div class="field-label"><span class="glyph glyph-circle"></span> Proporção (aspect ratio)</div>
+              <div class="chips ar-row" data-group="ar"></div>
+            </div>
+
+            <button id="build-btn" class="btn-primary build-btn" type="button">
+              <span class="btn-text">Gerar prompt</span>
+              <span class="btn-loading" style="display:none;">Gerando...</span>
+            </button>
+            <p id="build-error" class="error-message" style="display:none;"></p>
+          </div>
+        </section>
+
+        <!-- RIGHT: output -->
+        <section class="panel panel-output" aria-label="Prompt gerado">
+          <div class="panel-head"><span class="label">Resultado</span></div>
+
+          <div id="out-empty" class="out-empty">
+            <div class="empty-shapes" aria-hidden="true">
+              <span class="es-sq"></span>
+              <span class="es-ci"></span>
+              <span class="es-tr"></span>
+            </div>
+            <p>Seu prompt otimizado aparecerá aqui</p>
+          </div>
+
+          <div id="out-loading" class="loading-wrap" style="display:none;">
+            <div class="spinner-geo" aria-hidden="true">
+              <span class="sg-sq"></span>
+              <span class="sg-ci"></span>
+              <span class="sg-tr"></span>
+            </div>
+            <p>Montando seu prompt...</p>
+          </div>
+
+          <div id="out-result" style="display:none;">
+            <div class="out-block">
+              <div class="out-block-head">
+                <span class="label"><span class="glyph glyph-square"></span> Prompt</span>
+                <button type="button" class="copy-mini" data-copy="out-prompt">Copiar</button>
+              </div>
+              <div class="out-block-body"><pre id="out-prompt" class="prompt-text"></pre></div>
+            </div>
+
+            <div class="out-block" id="out-negative-block">
+              <div class="out-block-head">
+                <span class="label"><span class="glyph glyph-circle"></span> Negative prompt</span>
+                <button type="button" class="copy-mini" data-copy="out-negative">Copiar</button>
+              </div>
+              <div class="out-block-body"><pre id="out-negative" class="prompt-text"></pre></div>
+            </div>
+
+            <div class="out-block" id="out-params-block">
+              <div class="out-block-head">
+                <span class="label"><span class="glyph glyph-tri"></span> Parâmetros</span>
+                <button type="button" class="copy-mini" data-copy="out-params">Copiar</button>
+              </div>
+              <div class="out-block-body"><pre id="out-params" class="prompt-text params"></pre></div>
+            </div>
+
+            <div class="out-block" id="out-rationale-block">
+              <div class="out-block-head">
+                <span class="label">Por quê</span>
+              </div>
+              <div class="out-block-body"><p id="out-rationale" class="rationale"></p></div>
+            </div>
+          </div>
+        </section>
+      </div>
+    </main>
+
+    <footer class="app-footer">
+      <p>Feito com carinho para a comunidade <strong>Gênesis IA</strong></p>
+      <p class="footer-links">
+        <a href="/privacy-policy" rel="noopener noreferrer" target="_blank">Política de Privacidade</a>
+        <span class="footer-sep">·</span>
+        <a href="/data-deletion" rel="noopener noreferrer" target="_blank">Solicitar Exclusão de Dados</a>
+      </p>
+    </footer>
+  </div>
+
+  <!-- API Key Manager Modal -->
+  <div id="key-modal" class="modal" style="display:none;">
+    <div class="modal-overlay"></div>
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3>Gerenciar Chave de API</h3>
+        <button id="modal-close" class="btn-icon" aria-label="Fechar">×</button>
+      </div>
+      <div id="modal-key-inputs" class="key-inputs"></div>
+      <div class="modal-actions">
+        <button id="modal-save" class="btn-primary">Salvar</button>
+        <button id="modal-clear" class="btn-danger">Limpar todas as chaves</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="js/config.js"></script>
+  <script src="js/kill-switch.js"></script>
+  <script src="js/rate-limiter.js"></script>
+  <script src="js/membership-gate.js"></script>
+  <script src="js/api-key-manager.js"></script>
+  <script src="js/feedback-widget.js"></script>
+  <script src="js/app.js"></script>
+
+
+</body></html>

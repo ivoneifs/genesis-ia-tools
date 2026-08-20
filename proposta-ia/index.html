@@ -1,0 +1,236 @@
+<!DOCTYPE html><html lang="pt-BR"><head>
+  <script>/* gate-bootstrap: capture an early login submit before the remote gate wires up, so the first click is never lost */
+  (function(){function h(e){var f=e.target;if(f&&f.id==='gate-form'&&!window.MembershipGate){e.preventDefault();e.stopImmediatePropagation();window.__gateEarlySubmit=true;}}window.addEventListener('submit',h,true);window.__gateBootstrapDisarm=function(){window.removeEventListener('submit',h,true);};})();</script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Proposta IA — Gênesis IA</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='22' fill='%230a0a0f'/%3E%3Cpath d='M32 22h28l10 10v44a4 4 0 0 1-4 4H32a4 4 0 0 1-4-4V26a4 4 0 0 1 4-4z' fill='none' stroke='%23a78bfa' stroke-width='5'/%3E%3Cpath d='M39 46h22M39 58h22M39 70h14' stroke='%23f472b6' stroke-width='5' stroke-linecap='round'/%3E%3C/svg%3E">
+  <link rel="stylesheet" href="css/styles.css">
+  <link rel="preconnect" href="https://gate.appsbrasil.store">
+  <link rel="preload" href="https://gate.appsbrasil.store/v1/membership-gate.js" as="script">
+</head>
+<body>
+  <div class="bg-gradient"></div>
+
+  <!-- MEMBERSHIP GATE -->
+  <div id="gate-screen" class="screen active">
+    <div class="gate-container">
+      <div class="gate-header">
+        <h1 class="gradient-text">Proposta IA</h1>
+        <p class="subtitle">Gerador de propostas comerciais com IA — descreva o projeto e receba uma proposta profissional pronta para enviar ao cliente</p>
+        <p class="community-badge">Exclusivo para membros da Comunidade Gênesis IA</p>
+      </div>
+
+      <form id="gate-form" class="gate-form">
+        <div class="form-group">
+          <label for="gate-email">Seu e-mail cadastrado</label>
+          <input type="email" id="gate-email" placeholder="seu@email.com" autocomplete="email">
+        </div>
+        <div class="form-group">
+          <label for="gate-phone">Seu WhatsApp (com DDD)</label>
+          <input type="tel" id="gate-phone" placeholder="11999999999" autocomplete="tel">
+        </div>
+        <button type="submit" id="gate-submit" class="btn-primary">
+          <span class="btn-text">Verificar acesso</span>
+          <span class="btn-loading" style="display:none;">Verificando...</span>
+        </button>
+        <p id="gate-error" class="error-message" style="display:none;"></p>
+      </form>
+
+      <p class="gate-footer">Ainda não é membro? <a href="https://comunidade-genesisia.appsbrasil.store" target="_blank" rel="noopener noreferrer">Conheça a Comunidade Gênesis IA</a></p>
+    </div>
+  </div>
+
+  <!-- API KEY SETUP (shown after membership verification) -->
+  <div id="key-screen" class="screen">
+    <div class="key-container">
+      <h2>Configure suas chaves de API</h2>
+      <p class="subtitle">Suas chaves ficam salvas apenas no seu navegador. Nunca são enviadas para nossos servidores.</p>
+
+      <div id="key-inputs" class="key-inputs">
+        <!-- Dynamically populated by api-key-manager.js based on ENABLED_SERVICES (openai, openrouter) -->
+      </div>
+
+      <div class="key-actions">
+        <button id="key-continue" class="btn-primary" disabled="">Continuar para a ferramenta</button>
+        <button id="key-skip" class="btn-secondary">Pular por enquanto</button>
+      </div>
+
+      <details class="key-info">
+        <summary>Como consigo uma chave de API?</summary>
+        <div class="key-info-content">
+          <p>Você precisa de <strong>apenas uma</strong> destas chaves para usar a ferramenta:</p>
+          <p><strong>OpenAI:</strong> Acesse <code>platform.openai.com/api-keys</code> e crie uma nova chave.</p>
+          <p><strong>OpenRouter:</strong> Acesse <code>openrouter.ai/keys</code> e crie uma chave — uma só chave dá acesso a vários modelos.</p>
+          <p class="key-info-note">Sua chave fica salva apenas no seu navegador (localStorage). Nunca é enviada aos nossos servidores.</p>
+        </div>
+      </details>
+    </div>
+  </div>
+
+  <!-- MAIN APPLICATION -->
+  <div id="app-screen" class="screen">
+    <header class="app-header">
+      <div class="header-left">
+        <h1 class="app-title">Proposta IA</h1>
+      </div>
+      <div class="header-right">
+        <a aria-label="Sobre" class="btn-icon" href="/about" title="Sobre esta ferramenta">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+        </a>
+        <button id="manage-keys-btn" class="btn-icon" title="Gerenciar chaves de API">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 1 1-7.778 7.778 5.5 5.5 0 0 1 7.777-7.777zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3m-3.5 3.5L19 4"></path></svg>
+        </button>
+        <button id="logout-btn" class="btn-icon" title="Sair">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg>
+        </button>
+      </div>
+    </header>
+
+    <main class="app-main">
+      <div class="intro-block">
+        <h2 class="intro-title">Olá, <span id="user-name">Maestro</span>! Vamos criar sua proposta.</h2>
+        <p class="intro-sub">Descreva o projeto e quem é o cliente. A IA escreve uma proposta comercial completa em português — com escopo, etapas, investimento e condições — pronta para você revisar e enviar.</p>
+      </div>
+
+      <div class="builder-grid">
+        <!-- INPUT PANEL -->
+        <section class="panel input-panel">
+          <h3 class="panel-title">
+            <span class="panel-num">1</span> Detalhes do projeto
+          </h3>
+
+          <div class="field-row">
+            <div class="field">
+              <label for="provider-input">Você / sua empresa <span class="req">*</span></label>
+              <input type="text" id="provider-input" placeholder="Ex.: Studio Lyra">
+            </div>
+            <div class="field">
+              <label for="client-input">Cliente <span class="req">*</span></label>
+              <input type="text" id="client-input" placeholder="Ex.: Padaria Pão Quente">
+            </div>
+          </div>
+
+          <div class="field">
+            <label for="project-input">O projeto e a necessidade do cliente <span class="req">*</span></label>
+            <textarea id="project-input" rows="6" placeholder="Descreva livremente: que serviço você vai oferecer, qual é o problema ou objetivo do cliente, o contexto do negócio dele e o que você pretende entregar. Não precisa formatar — a IA organiza tudo."></textarea>
+            <p class="field-hint">Quanto mais contexto, mais personalizada e convincente fica a proposta.</p>
+          </div>
+
+          <div class="field">
+            <label for="deliverables-input">Entregáveis e o que está incluído <span class="opt">(opcional)</span></label>
+            <textarea id="deliverables-input" rows="3" placeholder="Liste o que será entregue, se já souber. Ex.: 3 peças para redes sociais por semana, 1 relatório mensal, suporte por WhatsApp. Se deixar em branco, a IA sugere um escopo a partir da descrição."></textarea>
+          </div>
+
+          <div class="field-row">
+            <div class="field">
+              <label for="price-input">Valor do investimento <span class="opt">(opcional)</span></label>
+              <input type="text" id="price-input" placeholder="Ex.: R$ 2.500/mês">
+            </div>
+            <div class="field">
+              <label for="timeline-input">Prazo estimado <span class="opt">(opcional)</span></label>
+              <input type="text" id="timeline-input" placeholder="Ex.: 6 semanas">
+            </div>
+          </div>
+          <p class="field-hint field-hint-tight">Se você informar o valor, a IA usa exatamente esse número. Se deixar em branco, a proposta marca onde inserir o valor — a IA nunca inventa preços.</p>
+
+          <div class="field-row">
+            <div class="field">
+              <label for="tone-input">Tom da proposta</label>
+              <select id="tone-input">
+                <option value="Profissional e objetivo" selected="">Profissional e objetivo</option>
+                <option value="Caloroso e próximo">Caloroso e próximo</option>
+                <option value="Premium e sofisticado">Premium e sofisticado</option>
+                <option value="Direto e comercial">Direto e comercial</option>
+              </select>
+            </div>
+            <div class="field">
+              <label for="length-input">Tamanho</label>
+              <select id="length-input">
+                <option value="Concisa">Concisa</option>
+                <option value="Padrão" selected="">Padrão</option>
+                <option value="Detalhada">Detalhada</option>
+              </select>
+            </div>
+          </div>
+
+          <button id="generate-btn" class="btn-primary">
+            <span class="btn-text">Gerar minha proposta</span>
+            <span class="btn-loading" style="display:none;">Gerando proposta...</span>
+          </button>
+          <p id="builder-error" class="error-message" style="display:none;"></p>
+          <p id="no-key-warning" class="warn-message" style="display:none;">
+            Você ainda não configurou uma chave de API. <button type="button" id="open-keys-link" class="link-btn">Configurar agora</button>
+          </p>
+        </section>
+
+        <!-- OUTPUT PANEL -->
+        <section class="panel output-panel">
+          <div class="output-head">
+            <h3 class="panel-title"><span class="panel-num">2</span> Sua proposta</h3>
+            <div id="output-actions" class="output-actions" style="display:none;">
+              <button id="copy-btn" class="btn-mini" title="Copiar texto">Copiar</button>
+              <button id="download-btn" class="btn-mini" title="Baixar como .txt">Baixar .txt</button>
+              <button id="print-btn" class="btn-mini" title="Imprimir ou salvar em PDF">Imprimir / PDF</button>
+            </div>
+          </div>
+
+          <!-- empty state -->
+          <div id="output-empty" class="output-empty">
+            <svg width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><line x1="10" y1="9" x2="8" y2="9"></line></svg>
+            <p>Sua proposta comercial aparecerá aqui.</p>
+            <span>Preencha os campos ao lado e clique em <strong>Gerar minha proposta</strong>.</span>
+          </div>
+
+          <!-- loading state -->
+          <div id="output-loading" class="output-loading" style="display:none;">
+            <div class="spinner"></div>
+            <p>A IA está escrevendo sua proposta...</p>
+            <span>Isso leva alguns segundos.</span>
+          </div>
+
+          <!-- result -->
+          <div id="output-result" class="output-result" style="display:none;">
+            <div id="proposal-doc" class="proposal-doc"></div>
+            <div id="tips-block" class="tips-block" style="display:none;"></div>
+          </div>
+        </section>
+      </div>
+    </main>
+
+    <footer class="app-footer">
+      <p>Feito com carinho para a comunidade <strong>Gênesis IA</strong></p>
+      <p class="footer-links">
+        <a href="/privacy-policy" rel="noopener noreferrer" target="_blank">Política de Privacidade</a>
+        <span class="footer-sep">·</span>
+        <a href="/data-deletion" rel="noopener noreferrer" target="_blank">Solicitar Exclusão de Dados</a>
+      </p>
+    </footer>
+  </div>
+
+  <!-- API Key Manager Modal -->
+  <div id="key-modal" class="modal" style="display:none;">
+    <div class="modal-overlay"></div>
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3>Gerenciar Chaves de API</h3>
+        <button id="modal-close" class="btn-icon">×</button>
+      </div>
+      <div id="modal-key-inputs" class="key-inputs"></div>
+      <div class="modal-actions">
+        <button id="modal-save" class="btn-primary">Salvar</button>
+        <button id="modal-clear" class="btn-danger">Limpar todas as chaves</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="js/config.js"></script>
+  <script src="js/kill-switch.js"></script>
+  <script src="js/rate-limiter.js"></script>
+  <script src="js/membership-gate.js"></script>
+  <script src="js/api-key-manager.js"></script>
+  <script src="js/feedback-widget.js"></script>
+  <script src="js/app.js"></script>
+
+
+</body></html>

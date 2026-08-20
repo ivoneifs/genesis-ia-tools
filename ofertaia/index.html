@@ -1,0 +1,213 @@
+<!DOCTYPE html><html lang="pt-BR"><head>
+  <script>/* gate-bootstrap: capture an early login submit before the remote gate wires up, so the first click is never lost */
+  (function(){function h(e){var f=e.target;if(f&&f.id==='gate-form'&&!window.MembershipGate){e.preventDefault();e.stopImmediatePropagation();window.__gateEarlySubmit=true;}}window.addEventListener('submit',h,true);window.__gateBootstrapDisarm=function(){window.removeEventListener('submit',h,true);};})();</script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Oferta IA — Gênesis IA</title>
+  <meta name="description" content="Monte ofertas irresistíveis com stack de valor: promessa, bônus, garantia, âncora de preço e exporte pronto para a página de vendas.">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Crect width='24' height='24' rx='4' fill='%230f5132'/%3E%3Cpath d='M6 8h12M6 12h7M6 16h9' stroke='%23a8842c' stroke-width='2' stroke-linecap='round'/%3E%3C/svg%3E">
+  <link rel="stylesheet" href="css/styles.css">
+  <link rel="preconnect" href="https://gate.appsbrasil.store">
+  <link rel="preload" href="https://gate.appsbrasil.store/v1/membership-gate.js" as="script">
+</head>
+<body>
+  <div class="bg-gradient"></div>
+
+  <!-- MEMBERSHIP GATE -->
+  <div id="gate-screen" class="screen active">
+    <div class="gate-container">
+      <div class="gate-header">
+        <div class="ticket-glyph" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 8a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2 2 2 0 0 0 0 4 2 2 0 0 1-2 2H5a2 2 0 0 1-2-2 2 2 0 0 0 0-4z"></path><path d="M9 6v12" stroke-dasharray="2 2"></path></svg>
+        </div>
+        <h1 class="gradient-text">Oferta IA</h1>
+        <p class="subtitle">Monte ofertas irresistíveis com stack de valor — promessa, bônus, garantia e âncora de preço, prontos para a página de vendas.</p>
+        <p class="community-badge">Exclusivo para membros da Comunidade Gênesis IA</p>
+      </div>
+
+      <form id="gate-form" class="gate-form">
+        <div class="form-group">
+          <label for="gate-email">Seu e-mail cadastrado</label>
+          <input type="email" id="gate-email" placeholder="seu@email.com" autocomplete="email">
+        </div>
+        <div class="form-group">
+          <label for="gate-phone">Seu WhatsApp (com DDD)</label>
+          <input type="tel" id="gate-phone" placeholder="11999999999" autocomplete="tel">
+        </div>
+        <button type="submit" id="gate-submit" class="btn-primary">
+          <span class="btn-text">Verificar acesso</span>
+          <span class="btn-loading" style="display:none;">Verificando...</span>
+        </button>
+        <p id="gate-error" class="error-message" style="display:none;"></p>
+      </form>
+
+      <p class="gate-footer">Ainda não é membro? <a href="https://comunidade-genesisia.appsbrasil.store" target="_blank" rel="noopener noreferrer">Conheça a Comunidade Gênesis IA</a></p>
+    </div>
+  </div>
+
+  <!-- API KEY SETUP -->
+  <div id="key-screen" class="screen">
+    <div class="key-container">
+      <p class="tlabel" style="text-align:center;">Passo 2 · Sua chave de API</p>
+      <h2 style="text-align:center;">Configure sua chave</h2>
+      <p class="subtitle" style="text-align:center;">Suas chaves ficam salvas apenas no seu navegador (BYOK). Nunca são enviadas para nossos servidores.</p>
+
+      <div id="key-inputs" class="key-inputs"></div>
+
+      <div class="key-actions">
+        <button id="key-continue" class="btn-primary" disabled="">Continuar para a ferramenta</button>
+        <button id="key-skip" class="btn-secondary">Pular por enquanto</button>
+      </div>
+
+      <details class="key-info">
+        <summary>Como consigo uma chave de API?</summary>
+        <div class="key-info-content">
+          <p><strong>OpenRouter (recomendado — 1 chave, todos os modelos Claude/OpenAI/Gemini/DeepSeek):</strong> <code>openrouter.ai/keys</code></p>
+          <p><strong>OpenAI (alternativa):</strong> <code>platform.openai.com/api-keys</code></p>
+          <p>Sua chave é salva apenas no seu navegador (BYOK) e usada direto no provedor — nunca passa pelos nossos servidores.</p>
+        </div>
+      </details>
+    </div>
+  </div>
+
+  <!-- MAIN APPLICATION -->
+  <div id="app-screen" class="screen">
+    <header class="app-header">
+      <div class="header-left">
+        <h1 class="app-title">Oferta IA</h1>
+      </div>
+      <div class="header-right">
+        <a aria-label="Sobre" class="btn-icon" href="/about" title="Sobre esta ferramenta">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+        </a>
+        <button id="manage-keys-btn" class="btn-icon" title="Gerenciar chaves de API" aria-label="Gerenciar chaves">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 1 1-7.778 7.778 5.5 5.5 0 0 1 7.777-7.777zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3m-3.5 3.5L19 4"></path></svg>
+        </button>
+        <button id="logout-btn" class="btn-icon" title="Sair" aria-label="Sair">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg>
+        </button>
+      </div>
+    </header>
+
+    <main class="app-main">
+      <div class="studio">
+        <!-- ===== BRIEFING ===== -->
+        <section class="panel briefing-sticky">
+          <div class="panel-head">
+            <span class="panel-no">01</span>
+            <h2>Briefing da oferta</h2>
+          </div>
+          <p class="hint" style="margin:-4px 0 14px;">Olá, <strong id="user-name">Maestro</strong>! Preencha os campos e emita sua oferta.</p>
+
+          <div class="model-row">
+            <label for="model-select">Modelo IA</label>
+            <select id="model-select" aria-label="Escolha o modelo de IA"></select>
+          </div>
+
+          <form id="brief-form" class="brief-form" autocomplete="off">
+            <div class="field">
+              <label for="f-product">Produto / serviço</label>
+              <input type="text" id="f-product" placeholder="Ex.: Mentoria de tráfego pago para clínicas" maxlength="120">
+            </div>
+            <div class="field">
+              <label for="f-what">O que é / o que entrega</label>
+              <textarea id="f-what" placeholder="Descreva em 1-3 frases o que o produto é e o que a pessoa recebe." maxlength="600"></textarea>
+            </div>
+            <div class="field">
+              <label for="f-audience">Público-alvo</label>
+              <input type="text" id="f-audience" placeholder="Ex.: Donos de clínicas que querem lotar a agenda" maxlength="160">
+            </div>
+            <div class="field">
+              <label for="f-transformation">Transformação prometida</label>
+              <input type="text" id="f-transformation" placeholder="Ex.: Sair de 5 para 30 agendamentos por semana em 60 dias" maxlength="200">
+            </div>
+            <div class="field-row">
+              <div class="field">
+                <label for="f-price">Preço (hoje)</label>
+                <input type="number" id="f-price" placeholder="497" min="0" step="0.01" inputmode="decimal">
+              </div>
+              <div class="field">
+                <label for="f-currency">Moeda</label>
+                <select id="f-currency">
+                  <option value="BRL" selected="">R$ (Real)</option>
+                  <option value="USD">$ (Dólar)</option>
+                  <option value="EUR">€ (Euro)</option>
+                </select>
+              </div>
+            </div>
+            <div class="field">
+              <label for="f-installments">Parcelamento (opcional)</label>
+              <input type="text" id="f-installments" placeholder="Ex.: 12x de R$ 49,70" maxlength="60">
+            </div>
+            <div class="field">
+              <label>Tom da oferta</label>
+              <div class="chips" id="tone-chips" role="group" aria-label="Tom da oferta">
+                <span class="chip" role="button" tabindex="0" data-tone="Direto e objetivo" aria-pressed="true">Direto</span>
+                <span class="chip" role="button" tabindex="0" data-tone="Premium e sofisticado" aria-pressed="false">Premium</span>
+                <span class="chip" role="button" tabindex="0" data-tone="Amigável e próximo" aria-pressed="false">Amigável</span>
+                <span class="chip" role="button" tabindex="0" data-tone="Ousado e provocador" aria-pressed="false">Ousado</span>
+              </div>
+            </div>
+
+            <button type="submit" id="generate-btn" class="btn-primary">
+              <span class="btn-text">Emitir oferta</span>
+              <span class="btn-loading" style="display:none;">Emitindo…</span>
+            </button>
+          </form>
+        </section>
+
+        <!-- ===== PREVIEW ===== -->
+        <section class="preview-wrap">
+          <div id="preview" aria-live="polite">
+            <div class="empty-state" id="empty-state">
+              <div class="ticket-glyph" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M3 8a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2 2 2 0 0 0 0 4 2 2 0 0 1-2 2H5a2 2 0 0 1-2-2 2 2 0 0 0 0-4z"></path><path d="M9 6v12" stroke-dasharray="2 2"></path></svg>
+              </div>
+              <h3>Sua oferta aparece aqui</h3>
+              <p>Preencha o briefing ao lado e clique em <strong>Emitir oferta</strong>. A IA monta o stack de valor, a garantia, a urgência e a âncora de preço — tudo editável e exportável.</p>
+            </div>
+          </div>
+        </section>
+      </div>
+
+      <footer class="app-footer">
+        <p>Feito com carinho para a comunidade <strong>Gênesis IA</strong></p>
+        <p class="footer-links">
+          <a href="/about">Sobre</a>
+          <span class="footer-sep">·</span>
+          <a href="/privacy-policy" rel="noopener noreferrer" target="_blank">Política de Privacidade</a>
+          <span class="footer-sep">·</span>
+          <a href="/data-deletion" rel="noopener noreferrer" target="_blank">Solicitar Exclusão de Dados</a>
+        </p>
+      </footer>
+    </main>
+  </div>
+
+  <!-- API Key Manager Modal -->
+  <div id="key-modal" class="modal" style="display:none;">
+    <div class="modal-overlay"></div>
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3>Chaves de API</h3>
+        <button id="modal-close" class="btn-icon" aria-label="Fechar">×</button>
+      </div>
+      <div id="modal-key-inputs" class="key-inputs"></div>
+      <div class="modal-actions">
+        <button id="modal-save" class="btn-primary">Salvar</button>
+        <button id="modal-clear" class="btn-danger">Limpar todas</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="toast" class="toast" role="status" aria-live="polite"></div>
+
+  <script src="js/config.js"></script>
+  <script src="js/kill-switch.js"></script>
+  <script src="js/rate-limiter.js"></script>
+  <script src="js/membership-gate.js"></script>
+  <script src="js/api-key-manager.js"></script>
+  <script src="js/feedback-widget.js"></script>
+  <script src="js/app.js"></script>
+
+
+</body></html>

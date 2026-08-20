@@ -1,0 +1,214 @@
+<!DOCTYPE html><html lang="pt-BR"><head>
+  <script>/* gate-bootstrap: capture an early login submit before the remote gate wires up, so the first click is never lost */
+  (function(){function h(e){var f=e.target;if(f&&f.id==='gate-form'&&!window.MembershipGate){e.preventDefault();e.stopImmediatePropagation();window.__gateEarlySubmit=true;}}window.addEventListener('submit',h,true);window.__gateBootstrapDisarm=function(){window.removeEventListener('submit',h,true);};})();</script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Notas IA — Gênesis IA</title>
+  <meta name="description" content="Resumidor de reuniões com IA para a comunidade Gênesis IA. Cole a transcrição, receba resumo, decisões, itens de ação e próximos passos.">
+  <link rel="stylesheet" href="css/styles.css">
+  <link rel="preconnect" href="https://gate.appsbrasil.store">
+  <link rel="preload" href="https://gate.appsbrasil.store/v1/membership-gate.js" as="script">
+</head>
+<body>
+  <div class="bg-gradient"></div>
+
+  <!-- MEMBERSHIP GATE -->
+  <div id="gate-screen" class="screen active">
+    <div class="gate-container">
+      <div class="gate-header">
+        <p class="meta-strip"><span class="num">N°01</span><span class="sep">/</span><span>RESUMIDOR DE REUNIÕES</span><span class="meta-tail"></span></p>
+        <h1 class="gradient-text">Notas IA</h1>
+        <p class="subtitle">Cole a transcrição ou anotações de uma reunião. A IA devolve resumo executivo, decisões, itens de ação e próximos passos — pronto para arquivar ou enviar para o time.</p>
+        <p class="community-badge">Exclusivo para membros da Comunidade Gênesis IA</p>
+      </div>
+
+      <form id="gate-form" class="gate-form" novalidate="">
+        <div class="form-group">
+          <label for="gate-email">E-mail cadastrado</label>
+          <input type="email" id="gate-email" placeholder="seu@email.com" autocomplete="email">
+        </div>
+        <div class="form-group">
+          <label for="gate-phone">WhatsApp (com DDD)</label>
+          <input type="tel" id="gate-phone" placeholder="11999999999" autocomplete="tel">
+        </div>
+        <button type="submit" id="gate-submit" class="btn-primary">
+          <span class="btn-text">Verificar acesso</span>
+          <span class="btn-loading" style="display:none;">Verificando…</span>
+        </button>
+        <p id="gate-error" class="error-message" style="display:none;"></p>
+      </form>
+
+      <p class="gate-footer">Ainda não é membro? <a href="https://comunidade-genesisia.appsbrasil.store" target="_blank" rel="noopener noreferrer">Conheça a Comunidade Gênesis IA →</a></p>
+    </div>
+  </div>
+
+  <!-- API KEY SETUP -->
+  <div id="key-screen" class="screen">
+    <div class="key-container">
+      <p class="meta-strip"><span class="num">N°02</span><span class="sep">/</span><span>SUAS CHAVES, SEU CONTROLE</span><span class="meta-tail"></span></p>
+      <h2>Configure suas chaves de API</h2>
+      <p class="subtitle">Suas chaves ficam salvas apenas no seu navegador. Nunca são enviadas para nossos servidores, nunca aparecem em logs, nunca saem do seu dispositivo.</p>
+
+      <div id="key-inputs" class="key-inputs"></div>
+
+      <div class="key-actions">
+        <button id="key-continue" class="btn-primary" disabled="">Continuar para a ferramenta</button>
+        <button id="key-skip" class="btn-secondary">Pular por enquanto</button>
+      </div>
+
+      <details class="key-info">
+        <summary>Como consigo uma chave de API?</summary>
+        <div class="key-info-content">
+          <p><strong style="color:var(--text);">OpenAI:</strong> acesse <code>platform.openai.com/api-keys</code> e crie uma nova chave. Use o modelo <code>gpt-4o-mini</code> — barato e ótimo para resumos.</p>
+          <p><strong style="color:var(--text);">OpenRouter:</strong> acesse <code>openrouter.ai/keys</code>. Permite usar Claude, Llama, Mistral e outros com uma chave só.</p>
+        </div>
+      </details>
+    </div>
+  </div>
+
+  <!-- MAIN APPLICATION -->
+  <div id="app-screen" class="screen">
+    <header class="app-header">
+      <div class="header-left">
+        <h1 class="app-title">Notas IA</h1>
+      </div>
+      <div class="header-right">
+        <a aria-label="Sobre" class="btn-icon" href="/about" title="Sobre esta ferramenta">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+        </a>
+        <button id="manage-keys-btn" class="btn-icon" title="Gerenciar chaves de API" aria-label="Gerenciar chaves">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 1 1-7.778 7.778 5.5 5.5 0 0 1 7.777-7.777zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3m-3.5 3.5L19 4"></path></svg>
+        </button>
+        <button id="logout-btn" class="btn-icon" title="Sair" aria-label="Sair">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg>
+        </button>
+      </div>
+    </header>
+
+    <main class="app-main">
+      <div id="no-key-warning" class="no-key-warning">
+        Você ainda não configurou uma chave de API. <a href="#" id="open-keys-link">Configure uma chave</a> para gerar resumos com IA.
+      </div>
+
+      <section class="section">
+        <p class="meta-strip"><span class="num">N°01</span><span class="sep">/</span><span>ENTRADA · TRANSCRIÇÃO OU ANOTAÇÕES</span><span class="meta-tail"></span></p>
+        <h2 class="section-title">Cole o conteúdo da reunião</h2>
+        <p class="section-lead">Funciona com transcrições do Zoom/Meet/Teams, anotações soltas, áudio transcrito ou um misto. Quanto mais contexto, melhor o resumo — mas a IA consegue extrair bastante de pouca coisa.</p>
+
+        <div class="field-row">
+          <label for="transcript-input">Transcrição ou notas da reunião</label>
+          <textarea id="transcript-input" placeholder="Ex: Reunião com a equipe de produto sobre o lançamento de Q3. Maria sugeriu adiar o lançamento da feature X em duas semanas para incluir o ajuste de preço. João discordou…" required=""></textarea>
+          <span class="char-count" id="transcript-count">0 caracteres · 0 palavras</span>
+        </div>
+
+        <div class="field-grid">
+          <div>
+            <label for="meeting-title">Título da reunião (opcional)</label>
+            <input type="text" id="meeting-title" placeholder="Ex: Sprint planning · Q3">
+          </div>
+          <div>
+            <label for="meeting-context">Tipo / contexto</label>
+            <select id="meeting-context">
+              <option value="generic">Reunião geral</option>
+              <option value="planning">Planejamento / sprint</option>
+              <option value="client">Reunião com cliente</option>
+              <option value="1on1">1:1 / mentoria</option>
+              <option value="standup">Daily / status</option>
+              <option value="retro">Retrospectiva</option>
+              <option value="decision">Comitê / decisão</option>
+              <option value="interview">Entrevista</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="action-row">
+          <button id="generate-btn" class="btn-primary">Gerar resumo</button>
+          <button id="clear-btn" class="btn-secondary">Limpar tudo</button>
+        </div>
+      </section>
+
+      <div id="loading-block" class="loading-block">Analisando reunião · extraindo decisões e itens de ação…</div>
+      <p id="generate-error" class="error-message" style="display:none; margin: var(--space-4) 0;"></p>
+
+      <div id="output-area">
+        <section class="section">
+          <div class="output-toolbar">
+            <button id="copy-md-btn" class="toolbar-btn">Copiar markdown</button>
+            <button id="copy-txt-btn" class="toolbar-btn">Copiar texto</button>
+            <button id="download-btn" class="toolbar-btn">Baixar .md</button>
+            <button id="print-btn" class="toolbar-btn">Imprimir / PDF</button>
+          </div>
+
+          <div id="output-meta" class="meta-strip" style="margin-bottom:var(--space-5);"></div>
+
+          <article class="output-section" id="summary-section">
+            <p class="meta-strip"><span class="num">N°01</span><span class="sep">/</span><span>RESUMO EXECUTIVO</span><span class="meta-tail"></span></p>
+            <h3>Resumo</h3>
+            <div id="summary-body"></div>
+          </article>
+
+          <article class="output-section" id="decisions-section">
+            <p class="meta-strip"><span class="num">N°02</span><span class="sep">/</span><span>DECISÕES</span><span class="meta-tail"></span></p>
+            <h3>Decisões tomadas</h3>
+            <ul id="decisions-list" class="decisions-list"></ul>
+          </article>
+
+          <article class="output-section" id="actions-section">
+            <p class="meta-strip"><span class="num">N°03</span><span class="sep">/</span><span>ITENS DE AÇÃO</span><span class="meta-tail"></span></p>
+            <h3>Itens de ação</h3>
+            <ul id="actions-list" class="actions-list"></ul>
+          </article>
+
+          <article class="output-section" id="questions-section">
+            <p class="meta-strip"><span class="num">N°04</span><span class="sep">/</span><span>EM ABERTO</span><span class="meta-tail"></span></p>
+            <h3>Perguntas e bloqueios em aberto</h3>
+            <ul id="questions-list" class="questions-list"></ul>
+          </article>
+
+          <article class="output-section" id="next-section">
+            <p class="meta-strip"><span class="num">N°05</span><span class="sep">/</span><span>PRÓXIMOS PASSOS</span><span class="meta-tail"></span></p>
+            <h3>Próximos passos</h3>
+            <div id="next-body"></div>
+          </article>
+        </section>
+      </div>
+    </main>
+
+    <footer class="app-footer">
+      <span>Feito com carinho para a comunidade <strong>Gênesis IA</strong></span>
+      <span class="footer-links">
+        <a href="/privacy-policy" rel="noopener noreferrer" target="_blank">Privacidade</a>
+        <span class="footer-sep">·</span>
+        <a href="/data-deletion" rel="noopener noreferrer" target="_blank">Exclusão de dados</a>
+        <span class="footer-sep">·</span>
+        <a href="/about">Sobre</a>
+      </span>
+    </footer>
+  </div>
+
+  <!-- API Key Manager Modal -->
+  <div id="key-modal" class="modal" style="display:none;">
+    <div class="modal-overlay"></div>
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3>Chaves de API</h3>
+        <button id="modal-close" class="btn-icon" aria-label="Fechar">×</button>
+      </div>
+      <div id="modal-key-inputs" class="key-inputs"></div>
+      <div class="modal-actions">
+        <button id="modal-save" class="btn-primary">Salvar</button>
+        <button id="modal-clear" class="btn-danger">Limpar todas as chaves</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="js/config.js"></script>
+  <script src="js/kill-switch.js"></script>
+  <script src="js/rate-limiter.js"></script>
+  <script src="js/membership-gate.js"></script>
+  <script src="js/api-key-manager.js"></script>
+  <script src="js/feedback-widget.js"></script>
+  <script src="js/app.js"></script>
+
+
+</body></html>

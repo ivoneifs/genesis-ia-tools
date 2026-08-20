@@ -1,0 +1,288 @@
+<!DOCTYPE html><html lang="pt-BR"><head>
+  <script>/* gate-bootstrap: capture an early login submit before the remote gate wires up, so the first click is never lost */
+  (function(){function h(e){var f=e.target;if(f&&f.id==='gate-form'&&!window.MembershipGate){e.preventDefault();e.stopImmediatePropagation();window.__gateEarlySubmit=true;}}window.addEventListener('submit',h,true);window.__gateBootstrapDisarm=function(){window.removeEventListener('submit',h,true);};})();</script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Slides IA — Gênesis IA</title>
+  <link rel="stylesheet" href="css/styles.css">
+  <link rel="preconnect" href="https://gate.appsbrasil.store">
+  <link rel="preload" href="https://gate.appsbrasil.store/v1/membership-gate.js" as="script">
+</head>
+<body>
+  <div class="bg-gradient"></div>
+
+  <!-- MEMBERSHIP GATE -->
+  <div id="gate-screen" class="screen active">
+    <div class="gate-container">
+      <div class="gate-header">
+        <div class="stage-mark" aria-hidden="true">
+          <span class="lamp"></span>
+          <span class="cone"></span>
+          <span class="pool"></span>
+        </div>
+        <h1 class="gate-title">Slides <span class="ia">IA</span></h1>
+        <p class="subtitle">Gere apresentações e pitch decks prontos para apresentar — com IA</p>
+        <p class="community-badge">Exclusivo para membros da Comunidade Gênesis IA</p>
+      </div>
+
+      <form id="gate-form" class="gate-form">
+        <div class="form-group">
+          <label for="gate-email">Seu e-mail cadastrado</label>
+          <input type="email" id="gate-email" placeholder="seu@email.com" autocomplete="email">
+        </div>
+        <div class="form-group">
+          <label for="gate-phone">Seu WhatsApp (com DDD)</label>
+          <input type="tel" id="gate-phone" placeholder="11999999999" autocomplete="tel">
+        </div>
+        <button type="submit" id="gate-submit" class="btn-primary">
+          <span class="btn-text">Verificar acesso</span>
+          <span class="btn-loading" style="display:none;">Verificando...</span>
+        </button>
+        <p id="gate-error" class="error-message" style="display:none;"></p>
+      </form>
+
+      <p class="gate-footer">Ainda não é membro? <a href="https://comunidade-genesisia.appsbrasil.store" target="_blank" rel="noopener noreferrer">Conheça a Comunidade Gênesis IA</a></p>
+    </div>
+  </div>
+
+  <!-- API KEY SETUP (shown after membership verification) -->
+  <div id="key-screen" class="screen">
+    <div class="key-container">
+      <h2>Configure suas chaves de API</h2>
+      <p class="subtitle">Suas chaves ficam salvas apenas no seu navegador. Nunca são enviadas para nossos servidores.</p>
+
+      <div id="key-inputs" class="key-inputs">
+        <!-- Dynamically populated by api-key-manager.js (OpenRouter + OpenAI) -->
+      </div>
+
+      <div class="key-actions">
+        <button id="key-continue" class="btn-primary" disabled="">Continuar para a ferramenta</button>
+        <button id="key-skip" class="btn-secondary">Pular por enquanto</button>
+      </div>
+
+      <details class="key-info">
+        <summary>Como consigo uma chave de API?</summary>
+        <div class="key-info-content">
+          <p><strong>OpenAI:</strong> Acesse <code>platform.openai.com/api-keys</code> e crie uma nova chave.</p>
+          <p><strong>Anthropic (Claude):</strong> Acesse <code>console.anthropic.com</code> e crie uma chave de API.</p>
+          <p><strong>Google (Gemini):</strong> Acesse <code>aistudio.google.com/apikey</code> e gere uma chave.</p>
+          <p><strong>OpenRouter:</strong> Acesse <code>openrouter.ai/keys</code> e crie uma chave.</p>
+        </div>
+      </details>
+    </div>
+  </div>
+
+  <!-- MAIN APPLICATION -->
+  <div id="app-screen" class="screen">
+    <header class="app-header">
+      <div class="header-left">
+        <span class="header-mark" aria-hidden="true">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="12" rx="1.5"></rect><line x1="12" y1="16" x2="12" y2="20"></line><line x1="8" y1="20" x2="16" y2="20"></line></svg>
+        </span>
+        <h1 class="app-title">Slides <span class="ia">IA</span></h1>
+      </div>
+      <div class="header-right">
+        <a aria-label="Sobre" class="btn-icon" href="/about" title="Sobre esta ferramenta">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+        </a>
+        <button id="manage-keys-btn" class="btn-icon" title="Gerenciar chaves de API">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 1 1-7.778 7.778 5.5 5.5 0 0 1 7.777-7.777zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3m-3.5 3.5L19 4"></path></svg>
+        </button>
+        <button id="logout-btn" class="btn-icon" title="Sair">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg>
+        </button>
+      </div>
+    </header>
+
+    <main class="app-main">
+      <div class="studio">
+        <!-- ===== BRIEF PANEL (inputs) ===== -->
+        <section class="brief-panel">
+          <span class="marquee-label">Briefing</span>
+          <form id="deck-form" autocomplete="off">
+            <div class="brief-field">
+              <label for="in-topic">Tema / assunto da apresentação</label>
+              <textarea id="in-topic" placeholder="Ex.: Como usar IA para escalar uma agência de marketing em 2026"></textarea>
+            </div>
+
+            <div class="brief-field">
+              <label for="in-audience">Público-alvo</label>
+              <input type="text" id="in-audience" placeholder="Ex.: Donos de pequenas agências e freelancers">
+            </div>
+
+            <div class="brief-field">
+              <label for="in-author">Apresentador (opcional)</label>
+              <input type="text" id="in-author" placeholder="Ex.: Seu nome / sua marca">
+            </div>
+
+            <div class="brief-field">
+              <label>Objetivo do deck</label>
+              <div class="chips" id="chips-goal" role="group" aria-label="Objetivo">
+                <button type="button" class="chip active" data-value="Webinar">Webinar</button>
+                <button type="button" class="chip" data-value="Pitch de vendas">Pitch de vendas</button>
+                <button type="button" class="chip" data-value="Aula">Aula</button>
+                <button type="button" class="chip" data-value="Lançamento">Lançamento</button>
+                <button type="button" class="chip" data-value="Reunião">Reunião</button>
+              </div>
+            </div>
+
+            <div class="brief-field">
+              <label>Número de slides</label>
+              <div class="chips" id="chips-count" role="group" aria-label="Número de slides">
+                <button type="button" class="chip" data-value="6">6</button>
+                <button type="button" class="chip active" data-value="8">8</button>
+                <button type="button" class="chip" data-value="10">10</button>
+                <button type="button" class="chip" data-value="12">12</button>
+              </div>
+            </div>
+
+            <div class="brief-field">
+              <label for="in-tone">Tom</label>
+              <select id="in-tone">
+                <option value="Profissional e direto">Profissional e direto</option>
+                <option value="Inspirador e motivacional">Inspirador e motivacional</option>
+                <option value="Didático e simples">Didático e simples</option>
+                <option value="Persuasivo (vendas)">Persuasivo (vendas)</option>
+                <option value="Descontraído e próximo">Descontraído e próximo</option>
+                <option value="Técnico e detalhado">Técnico e detalhado</option>
+              </select>
+            </div>
+
+            <div class="brief-field">
+              <label>Tema visual do deck</label>
+              <div class="chips" id="chips-theme" role="group" aria-label="Tema visual">
+                <button type="button" class="chip active" data-value="spotlight">Palco</button>
+                <button type="button" class="chip" data-value="minimal">Minimal</button>
+                <button type="button" class="chip" data-value="executive">Executivo</button>
+                <button type="button" class="chip" data-value="vibrant">Vibrante</button>
+              </div>
+            </div>
+
+            <div class="brief-field">
+              <label for="model-select">Modelo de IA</label>
+              <select id="model-select"></select>
+              <p class="brief-hint">Roteado via OpenRouter — sua chave alcança todos os provedores.</p>
+            </div>
+
+            <p class="byok-note">🔒 <strong>BYOK:</strong> sua chave de API fica só no seu navegador e nunca é enviada aos nossos servidores. A geração roda na sua própria chave.</p>
+
+            <button type="submit" id="generate-btn" class="btn-primary">Gerar apresentação</button>
+          </form>
+        </section>
+
+        <!-- ===== STAGE PANEL (output) ===== -->
+        <section class="stage-panel">
+          <div class="stage-toolbar">
+            <div class="tabs" role="tablist">
+              <button type="button" class="tab active" data-tab="preview" role="tab">Prévia</button>
+              <button type="button" class="tab" data-tab="outline" role="tab">Estrutura</button>
+              <button type="button" class="tab" data-tab="html" role="tab">HTML</button>
+            </div>
+          </div>
+
+          <!-- PREVIEW TAB -->
+          <div class="tab-panel" id="panel-preview">
+            <div class="stage-frame">
+              <div class="deck-viewport">
+                <iframe id="deck-frame" title="Prévia da apresentação" sandbox="allow-same-origin allow-scripts" style="display:none;"></iframe>
+
+                <div class="deck-empty" id="deck-empty">
+                  <div class="stage-mark" aria-hidden="true">
+                    <span class="lamp"></span><span class="cone"></span><span class="pool"></span>
+                  </div>
+                  <h3>O palco está pronto</h3>
+                  <p>Preencha o briefing à esquerda e gere uma apresentação completa, navegável e pronta para baixar em <strong>PPTX</strong> (PowerPoint) ou PDF.</p>
+                </div>
+
+                <div class="deck-loading" id="deck-loading" style="display:none;">
+                  <div class="spinner"></div>
+                  <p id="loading-text">Montando sua apresentação…</p>
+                </div>
+              </div>
+
+              <div class="deck-controls" id="deck-controls" style="display:none;">
+                <button type="button" class="nav-btn" id="prev-slide" aria-label="Slide anterior">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"></polyline></svg>
+                </button>
+                <span class="slide-counter"><b id="cur-slide">1</b> / <span id="total-slides">1</span></span>
+                <button type="button" class="nav-btn" id="next-slide" aria-label="Próximo slide">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg>
+                </button>
+              </div>
+            </div>
+
+            <div class="export-bar" id="export-bar" style="display:none;">
+              <button type="button" class="btn-export primary" id="export-pptx">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"></rect><path d="M8 8h5a3 3 0 0 1 0 6H8z"></path><line x1="8" y1="8" x2="8" y2="17"></line></svg>
+                Baixar PPTX
+              </button>
+              <button type="button" class="btn-export" id="export-pdf">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9V2h12v7"></path><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path><rect x="6" y="14" width="12" height="8"></rect></svg>
+                Baixar PDF
+              </button>
+              <button type="button" class="btn-export" id="export-html">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+                Baixar HTML
+              </button>
+              <button type="button" class="btn-export" id="open-fullscreen">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 3 21 3 21 9"></polyline><polyline points="9 21 3 21 3 15"></polyline><line x1="21" y1="3" x2="14" y2="10"></line><line x1="3" y1="21" x2="10" y2="14"></line></svg>
+                Abrir em tela cheia
+              </button>
+            </div>
+          </div>
+
+          <!-- OUTLINE TAB -->
+          <div class="tab-panel" id="panel-outline" style="display:none;">
+            <div class="panel-scroll" id="outline-list">
+              <p style="color:var(--text-dim);font-size:14px;">A estrutura dos slides aparece aqui depois de gerar.</p>
+            </div>
+          </div>
+
+          <!-- HTML TAB -->
+          <div class="tab-panel" id="panel-html" style="display:none;">
+            <div class="export-bar" style="margin-bottom:var(--space-sm);">
+              <button type="button" class="btn-export" id="copy-html">Copiar HTML</button>
+            </div>
+            <div class="panel-scroll"><div class="code-block" id="html-code">O HTML autocontido do deck aparece aqui depois de gerar.</div></div>
+          </div>
+        </section>
+      </div>
+    </main>
+
+    <footer class="app-footer">
+      <p>Feito com carinho para a comunidade <strong>Gênesis IA</strong></p>
+      <p class="footer-links">
+        <a href="/privacy-policy" rel="noopener noreferrer" target="_blank">Política de Privacidade</a>
+        <span class="footer-sep">·</span>
+        <a href="/data-deletion" rel="noopener noreferrer" target="_blank">Solicitar Exclusão de Dados</a>
+      </p>
+    </footer>
+  </div>
+
+  <!-- API Key Manager Modal -->
+  <div id="key-modal" class="modal" style="display:none;">
+    <div class="modal-overlay"></div>
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3>Gerenciar Chaves de API</h3>
+        <button id="modal-close" class="btn-icon">×</button>
+      </div>
+      <div id="modal-key-inputs" class="key-inputs"></div>
+      <div class="modal-actions">
+        <button id="modal-save" class="btn-primary">Salvar</button>
+        <button id="modal-clear" class="btn-danger">Limpar todas as chaves</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="js/config.js"></script>
+  <script src="js/kill-switch.js"></script>
+  <script src="js/rate-limiter.js"></script>
+  <script src="js/membership-gate.js"></script>
+  <script src="js/api-key-manager.js"></script>
+  <script src="js/feedback-widget.js"></script>
+  <script src="js/pptxgen.js"></script>
+  <script src="js/app.js"></script>
+
+
+</body></html>

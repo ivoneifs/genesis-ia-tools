@@ -1,0 +1,373 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Gênesis IA — Comunidade de Ferramentas de IA para quem vende, cria e empreende</title>
+<meta name="description" content="31 ferramentas de IA prontas para usar — e-mails, propostas, roteiros, planilhas, anúncios e muito mais. Exclusivo para membros da Comunidade Gênesis IA.">
+<style>
+  :root{
+    --paper:#f3f6f5;
+    --paper-2:#e6edec;
+    --paper-3:#ffffff;
+    --ink:#0b1f1c;
+    --ink-soft:#4a5f5b;
+    --ink-faint:#7c8e8a;
+    --accent:#1c7d6e;
+    --accent-2:#14544a;
+    --accent-dark:#0d3b34;
+    --accent-tint:#dcece8;
+    --dawn-1:#bfe3da;
+    --dawn-2:#2f9c88;
+    --line:#d7e2df;
+    --line-soft:#e4ecea;
+    --radius:16px;
+    --serif:'Fraunces','Iowan Old Style','Palatino Linotype',Georgia,'Times New Roman',serif;
+    --sans:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;
+    --mono:'SFMono-Regular','Roboto Mono',ui-monospace,Menlo,monospace;
+  }
+  *{box-sizing:border-box;}
+  html{scroll-behavior:smooth;}
+  body{
+    margin:0;
+    font-family:var(--sans);
+    background:var(--paper);
+    color:var(--ink);
+    line-height:1.6;
+    -webkit-font-smoothing:antialiased;
+  }
+  a{color:inherit;}
+  .wrap{max-width:1160px;margin:0 auto;padding:0 24px;}
+  ::selection{background:var(--dawn-1);color:var(--ink);}
+
+  /* faint paper grain */
+  body::before{
+    content:"";position:fixed;inset:0;pointer-events:none;z-index:0;opacity:.5;
+    background-image:
+      radial-gradient(circle at 1px 1px, rgba(33,26,16,.05) 1px, transparent 0);
+    background-size:3px 3px;
+  }
+
+  /* NAV */
+  header.nav{
+    position:sticky;top:0;z-index:30;
+    background:rgba(247,244,236,.86);
+    backdrop-filter:saturate(160%) blur(10px);
+    border-bottom:1px solid var(--line);
+  }
+  .nav-inner{display:flex;align-items:center;justify-content:space-between;padding:16px 24px;max-width:1160px;margin:0 auto;}
+  .brand{display:flex;align-items:center;gap:10px;font-family:var(--serif);font-weight:600;font-size:20px;letter-spacing:-.01em;}
+  .brand .sun{
+    width:22px;height:22px;border-radius:50%;flex:none;
+    background:radial-gradient(circle at 32% 28%, var(--dawn-1), var(--dawn-2) 55%, var(--accent-dark) 100%);
+    box-shadow:0 0 0 3px var(--accent-tint);
+  }
+  .nav-links{display:flex;align-items:center;gap:28px;}
+  .nav-links a{font-size:14px;font-weight:600;text-decoration:none;color:var(--ink-soft);}
+  .nav-links a:hover{color:var(--ink);}
+  .nav-cta{
+    background:var(--ink);color:var(--paper-3);text-decoration:none;
+    padding:10px 20px;border-radius:999px;font-size:14px;font-weight:700;
+    transition:background .15s ease, transform .15s ease;
+  }
+  .nav-cta:hover{background:var(--accent-dark);transform:translateY(-1px);}
+
+  /* HERO */
+  .hero{position:relative;padding:96px 0 72px;text-align:center;overflow:hidden;}
+  .hero::before{
+    content:"";position:absolute;left:50%;top:-180px;width:900px;height:520px;
+    transform:translateX(-50%);
+    background:radial-gradient(ellipse at center, var(--dawn-1) 0%, rgba(47,156,136,.35) 38%, rgba(47,156,136,0) 72%);
+    filter:blur(6px);pointer-events:none;
+  }
+  .hero-inner{position:relative;z-index:1;}
+  .kicker{
+    display:inline-flex;align-items:center;gap:8px;font-size:12.5px;font-weight:700;letter-spacing:.08em;
+    text-transform:uppercase;color:var(--accent-dark);
+    background:var(--accent-tint);padding:7px 16px 7px 12px;border-radius:999px;margin-bottom:28px;
+    border:1px solid rgba(13,59,52,.15);
+    animation:rise .6s ease both;
+  }
+  .kicker .dot{width:6px;height:6px;border-radius:50%;background:var(--accent);}
+  h1{
+    font-family:var(--serif);font-weight:600;
+    font-size:clamp(36px,5.4vw,64px);
+    line-height:1.06;letter-spacing:-.02em;margin:0 0 22px;
+    max-width:860px;margin-left:auto;margin-right:auto;
+    animation:rise .7s .05s ease both;
+  }
+  h1 em{font-style:italic;color:var(--accent-dark);}
+  .lead{
+    font-size:19px;color:var(--ink-soft);max-width:600px;margin:0 auto 38px;
+    animation:rise .7s .1s ease both;
+  }
+  .hero-actions{display:flex;gap:14px;justify-content:center;flex-wrap:wrap;margin-bottom:18px;animation:rise .7s .15s ease both;}
+  @keyframes rise{from{opacity:0;transform:translateY(14px);}to{opacity:1;transform:translateY(0);}}
+
+  .btn-primary{
+    background:linear-gradient(180deg, var(--dawn-2), var(--accent-dark));
+    color:#fff;text-decoration:none;
+    padding:16px 30px;border-radius:999px;font-weight:700;font-size:16px;
+    box-shadow:0 10px 24px -10px rgba(13,59,52,.65);
+    transition:transform .15s ease, box-shadow .15s ease;
+    display:inline-block;
+  }
+  .btn-primary:hover{transform:translateY(-2px);box-shadow:0 14px 28px -10px rgba(13,59,52,.7);}
+  .btn-secondary{
+    background:var(--paper-3);color:var(--ink);text-decoration:none;
+    padding:16px 26px;border-radius:999px;font-weight:600;font-size:16px;
+    border:1px solid var(--line);
+  }
+  .btn-secondary:hover{border-color:var(--ink);}
+  .fine-print{font-size:13px;color:var(--ink-faint);}
+
+  /* STRIP */
+  .strip{border-top:1px solid var(--line);border-bottom:1px solid var(--line);background:var(--paper-2);padding:20px 0;position:relative;z-index:1;}
+  .strip-inner{display:flex;gap:36px;justify-content:center;flex-wrap:wrap;font-size:13.5px;color:var(--ink-soft);font-weight:600;}
+  .strip-inner span{white-space:nowrap;}
+
+  /* SECTION HEAD */
+  .section{padding:88px 0;position:relative;z-index:1;}
+  .section-head{max-width:660px;margin:0 auto 52px;text-align:center;}
+  .section-head .kicker{margin-bottom:18px;}
+  .section-head h2{font-family:var(--serif);font-weight:600;font-size:clamp(28px,3.6vw,40px);letter-spacing:-.01em;margin:0 0 14px;}
+  .section-head p{color:var(--ink-soft);font-size:16px;margin:0;}
+
+  /* CATEGORY GROUPS */
+  .category{margin-bottom:56px;}
+  .category:last-child{margin-bottom:0;}
+  .category-head{display:flex;align-items:baseline;gap:14px;margin-bottom:20px;padding-bottom:12px;border-bottom:1px solid var(--line);}
+  .category-head .num{font-family:var(--mono);font-size:13px;color:var(--accent-dark);font-weight:700;}
+  .category-head h3{font-family:var(--serif);font-size:21px;font-weight:600;margin:0;letter-spacing:-.005em;}
+  .category-head .count{margin-left:auto;font-size:12.5px;color:var(--ink-faint);font-weight:600;}
+
+  .tool-grid{
+    display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:14px;
+  }
+  .tool-card{
+    background:var(--paper-3);border:1px solid var(--line);border-radius:var(--radius);
+    padding:20px;transition:border-color .15s ease, transform .15s ease, box-shadow .15s ease;
+    text-decoration:none;color:inherit;display:block;position:relative;
+  }
+  .tool-card:hover{border-color:var(--accent);transform:translateY(-3px);box-shadow:0 14px 28px -18px rgba(33,26,16,.4);}
+  .tool-card .glyph{
+    width:36px;height:36px;border-radius:10px;background:var(--accent-tint);
+    color:var(--accent-dark);display:flex;align-items:center;justify-content:center;
+    font-weight:700;font-size:15px;margin-bottom:14px;
+  }
+  .tool-card h4{font-size:15.5px;margin:0 0 6px;letter-spacing:-.005em;font-weight:700;}
+  .tool-card p{font-size:13px;color:var(--ink-soft);margin:0;line-height:1.5;}
+  .tool-card .ext{
+    position:absolute;top:18px;right:18px;font-size:11px;color:var(--ink-faint);
+    font-family:var(--mono);
+  }
+
+  /* HOW IT WORKS */
+  .steps{display:grid;grid-template-columns:repeat(3,1fr);gap:30px;}
+  .step{text-align:left;}
+  .step .num{
+    font-family:var(--serif);font-size:15px;font-weight:700;color:var(--accent-dark);
+    background:var(--accent-tint);width:34px;height:34px;border-radius:50%;
+    display:flex;align-items:center;justify-content:center;margin-bottom:18px;
+  }
+  .step h3{font-size:17.5px;margin:0 0 8px;font-weight:700;}
+  .step p{font-size:14.5px;color:var(--ink-soft);margin:0;}
+
+  /* CTA BAND */
+  .cta-band{
+    position:relative;overflow:hidden;
+    background:var(--ink);color:var(--paper);border-radius:28px;padding:64px 40px;text-align:center;
+    margin:0 24px;
+  }
+  .cta-band::before{
+    content:"";position:absolute;left:50%;top:-140px;width:640px;height:340px;transform:translateX(-50%);
+    background:radial-gradient(ellipse at center, rgba(47,156,136,.35), transparent 70%);
+  }
+  .cta-band h2{position:relative;font-family:var(--serif);font-weight:600;font-size:clamp(26px,3.4vw,36px);margin:0 0 14px;letter-spacing:-.01em;}
+  .cta-band p{position:relative;color:#b9d0cb;max-width:480px;margin:0 auto 30px;font-size:16px;}
+  .cta-band .btn-primary{position:relative;}
+
+  /* FOOTER */
+  footer{padding:52px 0 36px;border-top:1px solid var(--line);margin-top:48px;position:relative;z-index:1;}
+  .footer-inner{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:16px;font-size:13px;color:var(--ink-faint);}
+  .footer-links a{text-decoration:none;margin-left:20px;color:var(--ink-faint);}
+  .footer-links a:hover{color:var(--ink);}
+
+  .wa-float{
+    position:fixed;right:22px;bottom:22px;z-index:40;
+    display:flex;align-items:center;gap:10px;
+    background:#25D366;color:#fff;text-decoration:none;
+    padding:13px 20px;border-radius:999px;font-weight:700;font-size:14px;
+    box-shadow:0 10px 24px -8px rgba(0,0,0,.35);
+  }
+  .wa-float:hover{background:#1ebd5a;}
+
+  @media (max-width:720px){
+    .nav-links{display:none;}
+    .steps{grid-template-columns:1fr;}
+    .cta-band{margin:0 12px;padding:48px 24px;}
+    .footer-inner{flex-direction:column;text-align:center;}
+    .footer-links a{margin:0 10px;}
+    .category-head .count{display:none;}
+  }
+</style>
+</head>
+<body>
+
+  <header class="nav">
+    <div class="nav-inner">
+      <div class="brand"><span class="sun" aria-hidden="true"></span> Gênesis IA</div>
+      <nav class="nav-links">
+        <a href="#ferramentas">Ferramentas</a>
+        <a href="#como-funciona">Como funciona</a>
+      </nav>
+      <a class="nav-cta" href="https://comunidade-genesisia.appsbrasil.store" target="_blank" rel="noopener noreferrer">Entrar</a>
+    </div>
+  </header>
+
+  <section class="hero">
+    <div class="wrap hero-inner">
+      <span class="kicker"><span class="dot"></span> Comunidade Gênesis IA</span>
+      <h1>31 ferramentas de <em>IA prontas</em> pra quem vende, cria e empreende</h1>
+      <p class="lead">Sem prompt em branco, sem planilha do zero. Descreva o que você precisa e a IA entrega — no tom certo, pronto pra usar.</p>
+      <div class="hero-actions">
+        <a class="btn-primary" href="https://comunidade-genesisia.appsbrasil.store" target="_blank" rel="noopener noreferrer">Quero fazer parte</a>
+        <a class="btn-secondary" href="#ferramentas">Ver as ferramentas</a>
+      </div>
+      <p class="fine-print">Acesso liberado para membros da comunidade — sua chave de API fica só no seu navegador.</p>
+    </div>
+  </section>
+
+  <div class="strip">
+    <div class="wrap strip-inner">
+      <span>✉ E-mail, propostas &amp; contratos</span>
+      <span>🎬 Roteiros, VSL &amp; legendas</span>
+      <span>📊 Planilhas &amp; faturas</span>
+      <span>📣 Anúncios, hashtags &amp; tráfego</span>
+    </div>
+  </div>
+
+  <section class="section" id="ferramentas">
+    <div class="wrap">
+      <div class="section-head">
+        <span class="kicker"><span class="dot"></span> O que você encontra lá dentro</span>
+        <h2>Uma ferramenta de IA pra cada etapa do seu negócio</h2>
+        <p>Cada uma roda com a sua própria chave de API (OpenAI, OpenRouter ou fal.ai) — os dados nunca passam pelos nossos servidores.</p>
+      </div>
+
+      <div class="category">
+        <div class="category-head"><span class="num">01</span><h3>Marketing &amp; Redes Sociais</h3><span class="count">6 ferramentas</span></div>
+        <div class="tool-grid">
+          <a class="tool-card" href="../anunciosia/"><div class="glyph">📣</div><h4>Anúncios IA</h4><p>Ângulos e variações de copy para tráfego pago, com mockup do anúncio no feed.</p></a>
+          <a class="tool-card" href="../hashtagsia/"><div class="glyph">#️⃣</div><h4>Hashtags IA</h4><p>Estratégia de hashtags agrupadas por alcance para suas redes.</p></a>
+          <a class="tool-card" href="../carrosselia/"><div class="glyph">🎠</div><h4>Carrossel IA</h4><p>Gera as imagens reais do carrossel para Instagram, LinkedIn e TikTok.</p></a>
+          <a class="tool-card" href="../calendarioia/"><div class="glyph">📅</div><h4>Calendário IA</h4><p>Grade mensal de conteúdo com exportação para agenda e planilha.</p></a>
+          <a class="tool-card" href="../trafegoia/"><div class="glyph">📈</div><h4>Tráfego IA</h4><p>Planejador de mídia: verba, ROAS, CAC e plano de campanha.</p></a>
+          <a class="tool-card" href="../concorrente-ia/"><div class="glyph">🔍</div><h4>Concorrente IA</h4><p>Analisa o site de um concorrente e devolve uma análise competitiva.</p></a>
+        </div>
+      </div>
+
+      <div class="category">
+        <div class="category-head"><span class="num">02</span><h3>Vídeo &amp; Conteúdo</h3><span class="count">6 ferramentas</span></div>
+        <div class="tool-grid">
+          <a class="tool-card" href="../roteirosia/"><div class="glyph">🎬</div><h4>Roteiros IA</h4><p>Roteiros de vídeo curto: gancho, cenas com timecode, narração e CTA.</p></a>
+          <a class="tool-card" href="../vslia/"><div class="glyph">🎥</div><h4>VSL IA</h4><p>Roteiro completo de vídeo de vendas — beats, timing e teleprompter.</p></a>
+          <a class="tool-card" href="../thumbnailia/"><div class="glyph">🖼️</div><h4>Thumbnail IA</h4><p>Thumbnails com cena real por IA + título de alto-CTR, no tamanho certo.</p></a>
+          <a class="tool-card" href="../transcricaoia/"><div class="glyph">🎙️</div><h4>Transcrição IA</h4><p>Transcreve áudio/vídeo e gera legendas .SRT / .VTT prontas.</p></a>
+          <a class="tool-card ext" href="https://legendas-ia.netlify.app/" target="_blank" rel="noopener noreferrer"><div class="glyph">💬</div><h4>Legendas IA</h4><p>Legendas prontas para posts e vídeos, com CTA e tom ajustável.</p><span class="ext">↗</span></a>
+          <a class="tool-card" href="../slidesia/"><div class="glyph">🖥️</div><h4>Slides IA</h4><p>Apresentações e pitch decks prontos para apresentar.</p></a>
+        </div>
+      </div>
+
+      <div class="category">
+        <div class="category-head"><span class="num">03</span><h3>Vendas &amp; Conversão</h3><span class="count">6 ferramentas</span></div>
+        <div class="tool-grid">
+          <a class="tool-card" href="../ofertaia/"><div class="glyph">🎯</div><h4>Oferta IA</h4><p>Stack de oferta: promessa, bônus, garantia e âncora de preço.</p></a>
+          <a class="tool-card" href="../fechamentoia/"><div class="glyph">🤝</div><h4>Fechamento IA</h4><p>Roteiros de venda para WhatsApp/DM — abertura, objeções, fechamento.</p></a>
+          <a class="tool-card" href="../proposta-ia/"><div class="glyph">📄</div><h4>Proposta IA</h4><p>Proposta comercial completa a partir do briefing do projeto.</p></a>
+          <a class="tool-card" href="../paginaia/"><div class="glyph">🖥️</div><h4>Página de Vendas IA</h4><p>Página de vendas pronta pra publicar, com prévia ao vivo e download .html.</p></a>
+          <a class="tool-card" href="../quizia/"><div class="glyph">❓</div><h4>Quiz IA</h4><p>Quizzes e diagnósticos interativos de captura de lead.</p></a>
+          <a class="tool-card ext" href="https://persona-ia-genesisia.netlify.app/" target="_blank" rel="noopener noreferrer"><div class="glyph">👤</div><h4>Persona IA</h4><p>Monta a persona do seu cliente ideal a partir do seu negócio.</p><span class="ext">↗</span></a>
+        </div>
+      </div>
+
+      <div class="category">
+        <div class="category-head"><span class="num">04</span><h3>Documentos &amp; Operação</h3><span class="count">7 ferramentas</span></div>
+        <div class="tool-grid">
+          <a class="tool-card" href="../contratoia/"><div class="glyph">📝</div><h4>Contrato IA</h4><p>Contratos prontos para assinar — serviços, freelance, NDA e mais.</p></a>
+          <a class="tool-card" href="../faturasia/"><div class="glyph">🧾</div><h4>Faturas IA</h4><p>Faturas, recibos e orçamentos com prévia ao vivo e exportação em PDF.</p></a>
+          <a class="tool-card" href="../precificacaoia/"><div class="glyph">💰</div><h4>Precificação IA</h4><p>Preço-hora, break-even e 3 pacotes prontos para o cliente.</p></a>
+          <a class="tool-card" href="../planilhasia/"><div class="glyph">📊</div><h4>Planilhas IA</h4><p>Planilhas de negócio prontas em .xlsx, com fórmulas e exemplos.</p></a>
+          <a class="tool-card" href="../projeto%20E-mail%20certo/"><div class="glyph">✉</div><h4>E-mail IA</h4><p>E-mails profissionais bem redigidos, no tom certo, em segundos.</p></a>
+          <a class="tool-card" href="../notas-ia/"><div class="glyph">📋</div><h4>Notas IA</h4><p>Resumidor de reuniões: decisões, itens de ação e próximos passos.</p></a>
+          <a class="tool-card" href="../curriculo-ia/"><div class="glyph">💼</div><h4>Currículo IA</h4><p>Currículo sob medida a partir da vaga e da sua experiência.</p></a>
+        </div>
+      </div>
+
+      <div class="category">
+        <div class="category-head"><span class="num">05</span><h3>Criação &amp; Estratégia</h3><span class="count">6 ferramentas</span></div>
+        <div class="tool-grid">
+          <a class="tool-card" href="../-prompt-ia/"><div class="glyph">✳️</div><h4>Prompt IA</h4><p>Construtor visual de prompts para Midjourney, DALL·E, Flux e SD.</p></a>
+          <a class="tool-card" href="../ebookia/"><div class="glyph">📕</div><h4>E-book IA</h4><p>E-books e iscas digitais (lead magnets) prontos para distribuir.</p></a>
+          <a class="tool-card" href="../cursoia/"><div class="glyph">📚</div><h4>Curso IA</h4><p>Transforma uma ideia em grade curricular completa de curso.</p></a>
+          <a class="tool-card" href="../sequenciaia/"><div class="glyph">🔁</div><h4>Sequências IA</h4><p>Fluxos de e-mail para funis: boas-vindas, nutrição, lançamento.</p></a>
+          <a class="tool-card ext" href="https://mapa-mental-ia-genesisia.netlify.app/" target="_blank" rel="noopener noreferrer"><div class="glyph">🧠</div><h4>Mapa Mental IA</h4><p>Organiza ideias soltas em um mapa mental hierárquico.</p><span class="ext">↗</span></a>
+          <a class="tool-card ext" href="https://infografico-ia-genesisia.netlify.app/" target="_blank" rel="noopener noreferrer"><div class="glyph">📐</div><h4>Infográfico IA</h4><p>Estrutura de infográfico pronta para montar no design.</p><span class="ext">↗</span></a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section" id="como-funciona" style="padding-top:0;">
+    <div class="wrap">
+      <div class="section-head">
+        <span class="kicker"><span class="dot"></span> Como funciona</span>
+        <h2>Três passos e você já está usando</h2>
+      </div>
+      <div class="steps">
+        <div class="step">
+          <div class="num">1</div>
+          <h3>Entre na comunidade</h3>
+          <p>Verificação por e-mail e WhatsApp — sem senha nova pra lembrar.</p>
+        </div>
+        <div class="step">
+          <div class="num">2</div>
+          <h3>Conecte sua chave de API</h3>
+          <p>OpenAI, OpenRouter ou fal.ai. Fica salva só no seu navegador, nunca no servidor.</p>
+        </div>
+        <div class="step">
+          <div class="num">3</div>
+          <h3>Escolha a ferramenta e use</h3>
+          <p>Descreva o contexto, a IA gera o resultado pronto pra revisar e enviar.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section" style="padding-top:0;">
+    <div class="wrap">
+      <div class="cta-band">
+        <h2>Pronto pra parar de começar do zero?</h2>
+        <p>Entre na Comunidade Gênesis IA e tenha acesso às 31 ferramentas.</p>
+        <a class="btn-primary" href="https://comunidade-genesisia.appsbrasil.store" target="_blank" rel="noopener noreferrer">Quero fazer parte</a>
+      </div>
+    </div>
+  </section>
+
+  <footer>
+    <div class="wrap footer-inner">
+      <span>© <span id="year"></span> Comunidade Gênesis IA — Atendimento em Irecê e região</span>
+      <span class="footer-links">
+        <a href="https://wa.me/5574988259925" target="_blank" rel="noopener noreferrer">WhatsApp: (74) 98825-9925</a>
+        <a href="/privacy-policy" target="_blank" rel="noopener noreferrer">Política de Privacidade</a>
+        <a href="/data-deletion" target="_blank" rel="noopener noreferrer">Excluir meus dados</a>
+        <a href="https://comunidade-genesisia.appsbrasil.store" target="_blank" rel="noopener noreferrer">Entrar</a>
+      </span>
+    </div>
+  </footer>
+
+  <a class="wa-float" href="https://wa.me/5574988259925" target="_blank" rel="noopener noreferrer">💬 WhatsApp</a>
+
+  <script>document.getElementById('year').textContent = new Date().getFullYear();</script>
+</body>
+</html>

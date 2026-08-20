@@ -1,0 +1,266 @@
+<!DOCTYPE html><html lang="pt-BR"><head>
+  <script>/* gate-bootstrap: capture an early login submit before the remote gate wires up, so the first click is never lost */
+  (function(){function h(e){var f=e.target;if(f&&f.id==='gate-form'&&!window.MembershipGate){e.preventDefault();e.stopImmediatePropagation();window.__gateEarlySubmit=true;}}window.addEventListener('submit',h,true);window.__gateBootstrapDisarm=function(){window.removeEventListener('submit',h,true);};})();</script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Precificação IA — Gênesis IA</title>
+  <meta name="description" content="Calculadora de preços com IA: preço-hora, break-even e 3 pacotes (Essencial/Profissional/Premium) num cardápio de serviços pronto para o cliente.">
+  <link rel="stylesheet" href="css/styles.css">
+  <link rel="preconnect" href="https://gate.appsbrasil.store">
+  <link rel="preload" href="https://gate.appsbrasil.store/v1/membership-gate.js" as="script">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%236d1f2c'/%3E%3Cg stroke='%23c9a24a' stroke-width='2' stroke-linecap='round'%3E%3Cline x1='9' y1='11' x2='23' y2='11'/%3E%3Cline x1='9' y1='16' x2='19' y2='16'/%3E%3Cline x1='9' y1='21' x2='20' y2='21'/%3E%3C/g%3E%3Ccircle cx='23.5' cy='21' r='1.7' fill='%23c9a24a'/%3E%3C/svg%3E">
+</head>
+<body>
+  <div class="room-bg" aria-hidden="true"></div>
+
+  <!-- ============================ MEMBERSHIP GATE ============================ -->
+  <div id="gate-screen" class="screen active">
+    <div class="gate-container menu-card">
+      <div class="gate-header">
+        <div class="brand-glyph" aria-hidden="true">
+          <svg width="40" height="40" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <rect x="1" y="1" width="38" height="38" rx="9" fill="#6d1f2c"></rect>
+            <rect x="1" y="1" width="38" height="38" rx="9" fill="none" stroke="#c9a24a" stroke-width="1" opacity=".7"></rect>
+            <g stroke="#e8cf8f" stroke-width="2" stroke-linecap="round">
+              <line x1="11" y1="14" x2="29" y2="14"></line>
+              <line x1="11" y1="20" x2="24" y2="20"></line>
+              <line x1="11" y1="26" x2="26" y2="26"></line>
+            </g>
+            <circle cx="29" cy="26" r="1.9" fill="#e8cf8f"></circle>
+          </svg>
+        </div>
+        <p class="eyebrow">Cardápio de serviços</p>
+        <h1 class="gradient-text">Precificação <span class="hl">IA</span></h1>
+        <p class="subtitle">Descubra <strong>quanto cobrar</strong> pelo seu trabalho. Preço-hora real, ponto de equilíbrio e <strong>3 pacotes</strong> (Essencial · Profissional · Premium) num cardápio pronto para entregar ao cliente.</p>
+        <p class="community-badge">Exclusivo para membros da Comunidade Gênesis IA</p>
+      </div>
+
+      <form id="gate-form" class="gate-form">
+        <div class="form-group">
+          <label for="gate-email">Seu e-mail cadastrado</label>
+          <input type="email" id="gate-email" placeholder="seu@email.com" autocomplete="email">
+        </div>
+        <div class="form-group">
+          <label for="gate-phone">Seu WhatsApp (com DDD)</label>
+          <input type="tel" id="gate-phone" placeholder="11999999999" autocomplete="tel">
+        </div>
+        <button type="submit" id="gate-submit" class="btn-primary">
+          <span class="btn-text">Abrir o cardápio</span>
+          <span class="btn-loading" style="display:none;">Verificando...</span>
+        </button>
+        <p id="gate-error" class="error-message" style="display:none;"></p>
+      </form>
+
+      <p class="gate-footer">Ainda não é membro? <a href="https://comunidade-genesisia.appsbrasil.store" target="_blank" rel="noopener noreferrer">Conheça a Comunidade Gênesis IA</a></p>
+    </div>
+  </div>
+
+  <!-- ============================ API KEY SETUP ============================ -->
+  <div id="key-screen" class="screen">
+    <div class="key-container menu-card">
+      <p class="eyebrow">Antes de começar</p>
+      <h2>Configure sua chave de IA</h2>
+      <p class="subtitle">Sua chave fica salva apenas no seu navegador (localStorage). Nunca é enviada aos nossos servidores. A IA roda 100% na sua chave (BYOK).</p>
+
+      <div class="key-model-row">
+        <label for="key-model-select">Modelo de IA</label>
+        <select id="key-model-select"></select>
+      </div>
+
+      <div id="key-inputs" class="key-inputs">
+        <!-- Populated by api-key-manager.js -->
+      </div>
+
+      <div class="key-actions">
+        <button id="key-continue" class="btn-primary" disabled="">Continuar</button>
+        <button id="key-skip" class="btn-secondary">Pular por enquanto</button>
+      </div>
+
+      <details class="key-info">
+        <summary>Como consigo uma chave de API?</summary>
+        <div class="key-info-content">
+          <p><strong>OpenRouter (recomendado):</strong> uma única chave acessa Claude, GPT, Gemini, DeepSeek e mais. Crie em <code>openrouter.ai/keys</code>.</p>
+          <p><strong>OpenAI:</strong> <code>platform.openai.com/api-keys</code></p>
+          <p><strong>Google (Gemini):</strong> <code>aistudio.google.com/apikey</code></p>
+        </div>
+      </details>
+    </div>
+  </div>
+
+  <!-- ============================ MAIN APP ============================ -->
+  <div id="app-screen" class="screen">
+    <header class="app-header">
+      <div class="header-left">
+        <span class="mini-glyph" aria-hidden="true">
+          <svg width="30" height="30" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <rect x="1" y="1" width="38" height="38" rx="9" fill="#6d1f2c"></rect>
+            <g stroke="#e8cf8f" stroke-width="2" stroke-linecap="round">
+              <line x1="11" y1="14" x2="29" y2="14"></line>
+              <line x1="11" y1="20" x2="24" y2="20"></line>
+              <line x1="11" y1="26" x2="26" y2="26"></line>
+            </g>
+            <circle cx="29" cy="26" r="1.9" fill="#e8cf8f"></circle>
+          </svg>
+        </span>
+        <h1 class="app-title">Precificação <span class="hl">IA</span></h1>
+      </div>
+      <div class="header-right">
+        <a aria-label="Sobre" class="btn-icon" href="/about" title="Sobre esta ferramenta">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+        </a>
+        <button id="manage-keys-btn" class="btn-icon" title="Gerenciar chave de API" aria-label="Chaves">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 1 1-7.778 7.778 5.5 5.5 0 0 1 7.777-7.777zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3m-3.5 3.5L19 4"></path></svg>
+        </button>
+        <button id="logout-btn" class="btn-icon" title="Sair" aria-label="Sair">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg>
+        </button>
+      </div>
+    </header>
+
+    <main class="app-main">
+      <div class="studio">
+        <!-- ---------------- BRIEF ---------------- -->
+        <section class="panel brief-panel menu-card">
+          <div class="panel-head">
+            <h2>Seus números</h2>
+            <span class="panel-title-mono">O PEDIDO</span>
+          </div>
+
+          <div class="field">
+            <label>Como você cobra</label>
+            <div class="chips" id="chips-modelo" data-value="projeto">
+              <span class="chip active" data-val="projeto">Por projeto</span>
+              <span class="chip" data-val="mensal">Mensalidade</span>
+              <span class="chip" data-val="hora">Por hora</span>
+            </div>
+          </div>
+
+          <div class="field">
+            <label for="in-nicho">Seu serviço / nicho</label>
+            <input type="text" id="in-nicho" placeholder="ex: gestão de tráfego, edição de vídeo, social media, consultoria">
+            <div class="field-hint">Quanto mais específico, melhor a IA monta os pacotes.</div>
+          </div>
+
+          <div class="field-2">
+            <div class="field">
+              <label for="in-custos">Custos fixos / mês</label>
+              <div class="input-affix"><span class="affix">R$</span><input type="number" id="in-custos" inputmode="decimal" min="0" step="50" placeholder="2000" value="2000"></div>
+            </div>
+            <div class="field">
+              <label for="in-meta">Sua meta de renda / mês</label>
+              <div class="input-affix"><span class="affix">R$</span><input type="number" id="in-meta" inputmode="decimal" min="0" step="100" placeholder="8000" value="8000"></div>
+            </div>
+          </div>
+          <div class="field-hint" style="margin-top:-8px;margin-bottom:16px">Custos fixos = aluguel, ferramentas, softwares. Meta de renda = quanto você quer <em>tirar pra você</em> por mês (pró-labore).</div>
+
+          <div class="field-2">
+            <div class="field">
+              <label for="in-horas">Horas faturáveis / mês</label>
+              <div class="input-affix suffix"><input type="number" id="in-horas" inputmode="numeric" min="1" max="400" step="5" placeholder="120" value="120"><span class="affix">h</span></div>
+            </div>
+            <div class="field">
+              <label for="in-margem">Margem de lucro</label>
+              <div class="input-affix suffix"><input type="number" id="in-margem" inputmode="decimal" min="0" max="300" step="5" placeholder="25" value="25"><span class="affix">%</span></div>
+            </div>
+          </div>
+          <div class="field-hint" style="margin-top:-8px;margin-bottom:16px">Horas faturáveis = horas de trabalho de cliente por mês (o realista costuma ser 100–140, não 200). Margem = lucro do negócio <em>acima</em> da sua meta (impostos, reinvestimento, meses fracos).</div>
+
+          <div class="field" id="field-horasproj">
+            <label for="in-horasproj" id="lbl-horasproj">Horas por projeto</label>
+            <div class="input-affix suffix"><input type="number" id="in-horasproj" inputmode="decimal" min="0.5" step="1" placeholder="20" value="20"><span class="affix">h</span></div>
+            <div class="field-hint" id="hint-horasproj">Quantas horas você leva para entregar um projeto.</div>
+          </div>
+
+          <div class="field">
+            <label for="in-custodir" id="lbl-custodir">Custo direto por projeto <span style="opacity:.6">(opcional)</span></label>
+            <div class="input-affix"><span class="affix">R$</span><input type="number" id="in-custodir" inputmode="decimal" min="0" step="10" placeholder="0" value="0"></div>
+            <div class="field-hint">Materiais, subcontratados, tráfego repassado — o que sai do seu bolso por entrega.</div>
+          </div>
+
+          <div class="field">
+            <label>Faixa que o mercado cobra <span style="opacity:.6">(opcional)</span></label>
+            <div class="field-2">
+              <div class="input-affix"><span class="affix">R$</span><input type="number" id="in-mercmin" inputmode="decimal" min="0" step="50" placeholder="mín" aria-label="Mínimo do mercado"></div>
+              <div class="input-affix"><span class="affix">R$</span><input type="number" id="in-mercmax" inputmode="decimal" min="0" step="50" placeholder="máx" aria-label="Máximo do mercado"></div>
+            </div>
+            <div class="field-hint">Deixe em branco e a IA estima uma faixa para o seu nicho.</div>
+          </div>
+
+          <div class="custohora-live" id="custohora-live">
+            <span class="chl-label">Seu preço-hora mínimo agora</span>
+            <span class="chl-value mono" id="custohora-val">R$ 83/h</span>
+          </div>
+
+          <div class="field">
+            <label for="model-select">Modelo de IA</label>
+            <select id="model-select"></select>
+          </div>
+
+          <button id="btn-gerar" class="btn-primary gen-btn">Montar meu cardápio de preços</button>
+          <p class="gen-hint" id="gen-hint">O cálculo é instantâneo; a IA escreve os pacotes, o posicionamento e a quebra de objeções.</p>
+        </section>
+
+        <!-- ---------------- RESULTS ---------------- -->
+        <section class="results-panel" id="results">
+          <div class="state" id="empty-state">
+            <div class="state-glyph" aria-hidden="true">
+              <svg width="58" height="58" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <rect x="6" y="3" width="28" height="34" rx="3" fill="none" stroke="currentColor" stroke-width="1.3"></rect>
+                <g stroke="currentColor" stroke-width="1.3" stroke-linecap="round" opacity=".8">
+                  <line x1="12" y1="12" x2="23" y2="12"></line><circle cx="27.5" cy="12" r="1"></circle>
+                  <line x1="12" y1="18" x2="21" y2="18"></line><circle cx="27.5" cy="18" r="1"></circle>
+                  <line x1="12" y1="24" x2="25" y2="24"></line><circle cx="27.5" cy="24" r="1"></circle>
+                </g>
+              </svg>
+            </div>
+            <h3>Seu cardápio de preços aparece aqui</h3>
+            <p>Preencha seus números ao lado e clique em <strong>Montar meu cardápio de preços</strong>. Você recebe os 3 pacotes com preços calculados, o preço-hora e ponto de equilíbrio, o posicionamento e a quebra de objeções — pronto para exportar.</p>
+          </div>
+        </section>
+      </div>
+
+      <footer class="app-footer">
+        <p>Feito com carinho para a comunidade <strong>Gênesis IA</strong></p>
+        <p class="footer-links">
+          <a href="/about">Sobre</a>
+          <span class="footer-sep">·</span>
+          <a href="/privacy-policy" rel="noopener noreferrer" target="_blank">Política de Privacidade</a>
+          <span class="footer-sep">·</span>
+          <a href="/data-deletion" rel="noopener noreferrer" target="_blank">Solicitar Exclusão de Dados</a>
+        </p>
+      </footer>
+    </main>
+  </div>
+
+  <!-- ============================ KEY MANAGER MODAL ============================ -->
+  <div id="key-modal" class="modal" style="display:none;">
+    <div class="modal-overlay"></div>
+    <div class="modal-content menu-card">
+      <div class="modal-header">
+        <h3>Chave de API & Modelo</h3>
+        <button id="modal-close" class="btn-icon" aria-label="Fechar">×</button>
+      </div>
+      <div class="key-model-row" style="margin-top:0;margin-bottom:16px">
+        <label for="model-select-modal">Modelo de IA</label>
+        <select id="model-select-modal"></select>
+      </div>
+      <div id="modal-key-inputs" class="key-inputs"></div>
+      <div class="modal-actions">
+        <button id="modal-save" class="btn-primary">Salvar</button>
+        <button id="modal-clear" class="btn-danger">Limpar todas as chaves</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+  <script src="js/config.js"></script>
+  <script src="js/kill-switch.js"></script>
+  <script src="js/rate-limiter.js"></script>
+  <script src="js/membership-gate.js"></script>
+  <script src="js/api-key-manager.js"></script>
+  <script src="js/feedback-widget.js"></script>
+  <script src="js/app.js"></script>
+
+
+</body></html>

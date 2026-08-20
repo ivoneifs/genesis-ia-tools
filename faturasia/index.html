@@ -1,0 +1,304 @@
+<!DOCTYPE html><html lang="pt-BR"><head>
+  <script>/* gate-bootstrap: capture an early login submit before the remote gate wires up, so the first click is never lost */
+  (function(){function h(e){var f=e.target;if(f&&f.id==='gate-form'&&!window.MembershipGate){e.preventDefault();e.stopImmediatePropagation();window.__gateEarlySubmit=true;}}window.addEventListener('submit',h,true);window.__gateBootstrapDisarm=function(){window.removeEventListener('submit',h,true);};})();</script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Faturas IA — Gênesis IA</title>
+  <link rel="stylesheet" href="css/styles.css">
+  <link rel="preconnect" href="https://gate.appsbrasil.store">
+  <link rel="preload" href="https://gate.appsbrasil.store/v1/membership-gate.js" as="script">
+</head>
+<body>
+  <div class="bg-gradient"></div>
+
+  <!-- MEMBERSHIP GATE -->
+  <div id="gate-screen" class="screen active">
+    <div class="gate-container">
+      <div class="gate-header">
+        <h1 class="gradient-text">Faturas IA</h1>
+        <p class="subtitle">Gere faturas, recibos e orçamentos profissionais com pré-visualização ao vivo e exportação em PDF.</p>
+        <p class="community-badge">Exclusivo para membros da Comunidade Gênesis IA</p>
+      </div>
+
+      <form id="gate-form" class="gate-form">
+        <div class="form-group">
+          <label for="gate-email">Seu e-mail cadastrado</label>
+          <input type="email" id="gate-email" placeholder="seu@email.com" autocomplete="email">
+        </div>
+        <div class="form-group">
+          <label for="gate-phone">Seu WhatsApp (com DDD)</label>
+          <input type="tel" id="gate-phone" placeholder="11999999999" autocomplete="tel">
+        </div>
+        <button type="submit" id="gate-submit" class="btn-primary">
+          <span class="btn-text">Verificar acesso</span>
+          <span class="btn-loading" style="display:none;">Verificando...</span>
+        </button>
+        <p id="gate-error" class="error-message" style="display:none;"></p>
+      </form>
+
+      <p class="gate-footer">Ainda não é membro? <a href="https://comunidade-genesisia.appsbrasil.store" target="_blank" rel="noopener noreferrer">Conheça a Comunidade Gênesis IA</a></p>
+    </div>
+  </div>
+
+  <!-- API KEY SETUP (shown after membership verification) -->
+  <div id="key-screen" class="screen">
+    <div class="key-container">
+      <h2>Configure suas chaves de API</h2>
+      <p class="subtitle">Suas chaves ficam salvas apenas no seu navegador. Nunca são enviadas para nossos servidores.</p>
+
+      <div id="key-inputs" class="key-inputs">
+        <!-- Dynamically populated by api-key-manager.js (OpenRouter + OpenAI) -->
+      </div>
+
+      <div class="key-actions">
+        <button id="key-continue" class="btn-primary" disabled="">Continuar para a ferramenta</button>
+        <button id="key-skip" class="btn-secondary">Pular por enquanto</button>
+      </div>
+
+      <details class="key-info">
+        <summary>Como consigo uma chave de API?</summary>
+        <div class="key-info-content">
+          <p><strong>OpenAI:</strong> Acesse <code>platform.openai.com/api-keys</code> e crie uma nova chave.</p>
+          <p><strong>Anthropic (Claude):</strong> Acesse <code>console.anthropic.com</code> e crie uma chave de API.</p>
+          <p><strong>Google (Gemini):</strong> Acesse <code>aistudio.google.com/apikey</code> e gere uma chave.</p>
+          <p><strong>OpenRouter:</strong> Acesse <code>openrouter.ai/keys</code> e crie uma chave.</p>
+        </div>
+      </details>
+    </div>
+  </div>
+
+  <!-- MAIN APPLICATION -->
+  <div id="app-screen" class="screen">
+    <header class="app-header">
+      <div class="header-left">
+        <h1 class="app-title">Faturas IA</h1>
+      </div>
+      <div class="header-right">
+        <a aria-label="Sobre" class="btn-icon" href="/about" title="Sobre esta ferramenta">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+        </a>
+        <button id="manage-keys-btn" class="btn-icon" title="Gerenciar chaves de API">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 1 1-7.778 7.778 5.5 5.5 0 0 1 7.777-7.777zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3m-3.5 3.5L19 4"></path></svg>
+        </button>
+        <button id="logout-btn" class="btn-icon" title="Sair">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg>
+        </button>
+      </div>
+    </header>
+
+    <main class="app-main">
+      <div class="builder">
+
+        <!-- Toolbar: document type + actions -->
+        <div class="doc-toolbar">
+          <div class="seg" id="doc-type" role="tablist" aria-label="Tipo de documento">
+            <button type="button" data-type="fatura" class="active">Fatura</button>
+            <button type="button" data-type="recibo">Recibo</button>
+            <button type="button" data-type="orcamento">Orçamento</button>
+          </div>
+          <div class="toolbar-actions">
+            <button type="button" id="reset-btn" class="btn-secondary">Limpar tudo</button>
+            <button type="button" id="print-btn" class="btn-primary">Baixar PDF</button>
+          </div>
+        </div>
+
+        <!-- EDITOR (left) -->
+        <section class="editor" aria-label="Dados do documento">
+
+          <div class="panel">
+            <h3 class="panel-title">Emissor</h3>
+            <div class="grid-2">
+              <div class="field full">
+                <label for="f-issuer-name">Nome / Empresa</label>
+                <input type="text" id="f-issuer-name" data-bind="issuerName" placeholder="Seu nome ou razão social">
+              </div>
+              <div class="field">
+                <label for="f-issuer-doc">CNPJ / CPF</label>
+                <input type="text" id="f-issuer-doc" data-bind="issuerDoc" placeholder="00.000.000/0001-00">
+              </div>
+              <div class="field">
+                <label for="f-issuer-phone">Telefone</label>
+                <input type="text" id="f-issuer-phone" data-bind="issuerPhone" placeholder="(11) 99999-9999">
+              </div>
+              <div class="field full">
+                <label for="f-issuer-email">E-mail</label>
+                <input type="email" id="f-issuer-email" data-bind="issuerEmail" placeholder="contato@empresa.com">
+              </div>
+              <div class="field full">
+                <label for="f-issuer-address">Endereço</label>
+                <input type="text" id="f-issuer-address" data-bind="issuerAddress" placeholder="Rua, número, cidade — UF">
+              </div>
+            </div>
+          </div>
+
+          <div class="panel">
+            <h3 class="panel-title">Cliente</h3>
+            <div class="grid-2">
+              <div class="field full">
+                <label for="f-client-name">Nome / Empresa</label>
+                <input type="text" id="f-client-name" data-bind="clientName" placeholder="Nome do cliente">
+              </div>
+              <div class="field">
+                <label for="f-client-doc">CNPJ / CPF</label>
+                <input type="text" id="f-client-doc" data-bind="clientDoc" placeholder="000.000.000-00">
+              </div>
+              <div class="field">
+                <label for="f-client-email">E-mail</label>
+                <input type="email" id="f-client-email" data-bind="clientEmail" placeholder="cliente@email.com">
+              </div>
+              <div class="field full">
+                <label for="f-client-address">Endereço</label>
+                <input type="text" id="f-client-address" data-bind="clientAddress" placeholder="Endereço do cliente">
+              </div>
+            </div>
+          </div>
+
+          <div class="panel">
+            <h3 class="panel-title">Documento</h3>
+            <div class="grid-2">
+              <div class="field">
+                <label for="f-number">Número</label>
+                <input type="text" id="f-number" data-bind="number" placeholder="0001">
+              </div>
+              <div class="field">
+                <label for="f-currency">Moeda</label>
+                <select id="f-currency" data-bind="currency">
+                  <option value="BRL">Real (R$)</option>
+                  <option value="USD">Dólar (US$)</option>
+                  <option value="EUR">Euro (€)</option>
+                </select>
+              </div>
+              <div class="field">
+                <label for="f-date">Data de emissão</label>
+                <input type="date" id="f-date" data-bind="date">
+              </div>
+              <div class="field">
+                <label for="f-due">Vencimento</label>
+                <input type="date" id="f-due" data-bind="due">
+              </div>
+            </div>
+          </div>
+
+          <div class="panel">
+            <h3 class="panel-title">Itens</h3>
+            <div class="items-head">
+              <span>Descrição</span><span>Qtd</span><span>Valor unit.</span><span>Total</span><span></span>
+            </div>
+            <div id="items-list"></div>
+            <button type="button" id="add-item" class="add-item">+ Adicionar item</button>
+
+            <div class="grid-2" style="margin-top:var(--space-lg);">
+              <div class="field">
+                <label for="f-discount">Desconto</label>
+                <input type="number" id="f-discount" data-bind="discount" min="0" step="0.01" placeholder="0,00">
+              </div>
+              <div class="field">
+                <label for="f-discount-type">Tipo de desconto</label>
+                <select id="f-discount-type" data-bind="discountType">
+                  <option value="value">Valor fixo</option>
+                  <option value="percent">Percentual (%)</option>
+                </select>
+              </div>
+              <div class="field">
+                <label for="f-tax">Imposto / Taxa (%)</label>
+                <input type="number" id="f-tax" data-bind="tax" min="0" step="0.01" placeholder="0">
+              </div>
+            </div>
+          </div>
+
+          <div class="panel">
+            <h3 class="panel-title">Pagamento & observações</h3>
+            <div class="field">
+              <label for="f-payment">Instruções de pagamento</label>
+              <textarea id="f-payment" data-bind="payment" rows="3" placeholder="PIX: chave@email.com
+Banco / agência / conta
+Prazo: até o vencimento"></textarea>
+            </div>
+            <div class="field">
+              <label for="f-notes">Observações</label>
+              <textarea id="f-notes" data-bind="notes" rows="2" placeholder="Condições, garantias, agradecimento..."></textarea>
+            </div>
+          </div>
+
+          <div class="panel ai-panel">
+            <h3 class="panel-title">Assistente IA (opcional)</h3>
+            <p class="hint">Descreva o serviço em palavras simples e a IA escreve uma descrição profissional + termos de pagamento em português. Usa a sua própria chave (BYOK).</p>
+            <div class="field" style="margin-top:var(--space-md);">
+              <label for="ai-brief">O que você fez para o cliente?</label>
+              <textarea id="ai-brief" rows="2" placeholder="Ex: criei a identidade visual e o site de uma cafeteria"></textarea>
+            </div>
+            <div class="ai-row">
+              <div class="field">
+                <label for="model-select">Modelo de IA</label>
+                <select id="model-select"></select>
+              </div>
+              <button type="button" id="ai-generate" class="btn-primary">Gerar</button>
+            </div>
+            <p id="ai-status"></p>
+            <div id="ai-out" class="ai-out">
+              <div class="ai-block">
+                <h4>Descrição do serviço</h4>
+                <p id="ai-desc"></p>
+                <button type="button" class="mini-btn" id="ai-use-desc">Adicionar como item</button>
+              </div>
+              <div class="ai-block">
+                <h4>Termos de pagamento</h4>
+                <p id="ai-terms"></p>
+                <button type="button" class="mini-btn" id="ai-use-terms">Usar em pagamento</button>
+              </div>
+              <div class="ai-block">
+                <h4>Observações sugeridas</h4>
+                <p id="ai-notes"></p>
+                <button type="button" class="mini-btn" id="ai-use-notes">Usar em observações</button>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- PREVIEW (right) -->
+        <aside class="preview-wrap" aria-label="Pré-visualização">
+          <p class="preview-label">Pré-visualização ao vivo</p>
+          <div class="doc-paper" id="doc-paper">
+            <div class="doc-inner" id="doc-inner"><!-- rendered by app.js --></div>
+          </div>
+        </aside>
+
+      </div>
+    </main>
+
+    <footer class="app-footer">
+      <p>Feito com carinho para a comunidade <strong>Gênesis IA</strong></p>
+      <p class="footer-links">
+        <a href="/privacy-policy" rel="noopener noreferrer" target="_blank">Política de Privacidade</a>
+        <span class="footer-sep">·</span>
+        <a href="/data-deletion" rel="noopener noreferrer" target="_blank">Solicitar Exclusão de Dados</a>
+      </p>
+    </footer>
+  </div>
+
+  <!-- API Key Manager Modal -->
+  <div id="key-modal" class="modal" style="display:none;">
+    <div class="modal-overlay"></div>
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3>Gerenciar Chaves de API</h3>
+        <button id="modal-close" class="btn-icon">×</button>
+      </div>
+      <div id="modal-key-inputs" class="key-inputs"></div>
+      <div class="modal-actions">
+        <button id="modal-save" class="btn-primary">Salvar</button>
+        <button id="modal-clear" class="btn-danger">Limpar todas as chaves</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="js/config.js"></script>
+  <script src="js/kill-switch.js"></script>
+  <script src="js/rate-limiter.js"></script>
+  <script src="js/membership-gate.js"></script>
+  <script src="js/api-key-manager.js"></script>
+  <script src="js/feedback-widget.js"></script>
+  <script src="js/app.js"></script>
+
+
+</body></html>

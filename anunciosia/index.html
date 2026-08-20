@@ -1,0 +1,267 @@
+<!DOCTYPE html><html lang="pt-BR"><head>
+  <script>/* gate-bootstrap: capture an early login submit before the remote gate wires up, so the first click is never lost */
+  (function(){function h(e){var f=e.target;if(f&&f.id==='gate-form'&&!window.MembershipGate){e.preventDefault();e.stopImmediatePropagation();window.__gateEarlySubmit=true;}}window.addEventListener('submit',h,true);window.__gateBootstrapDisarm=function(){window.removeEventListener('submit',h,true);};})();</script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Anúncios IA — Gênesis IA</title>
+  <meta name="description" content="Estúdio de criativos de copy para tráfego pago: gera ângulos e variações de anúncio com limites de caracteres e renderiza o mockup do anúncio no feed. BYOK — use sua própria chave de IA.">
+  <link rel="stylesheet" href="css/styles.css">
+  <link rel="preconnect" href="https://gate.appsbrasil.store">
+  <link rel="preload" href="https://gate.appsbrasil.store/v1/membership-gate.js" as="script">
+</head>
+<body>
+  <div class="bg-gradient"></div>
+
+  <!-- MEMBERSHIP GATE -->
+  <div id="gate-screen" class="screen active">
+    <div class="gate-container">
+      <div class="gate-header">
+        <div class="gate-billboard" aria-hidden="true">
+          <div class="panel"></div>
+          <span class="post l"></span>
+          <span class="post r"></span>
+        </div>
+        <h1 class="gradient-text">Anúncios <span class="hl">IA</span></h1>
+        <p class="subtitle">Estúdio de criativos de copy para tráfego pago. Gera ângulos e variações de anúncio prontos para o Ads Manager e renderiza o mockup no feed.</p>
+        <p class="community-badge">Exclusivo para membros da Comunidade Gênesis IA</p>
+      </div>
+
+      <form id="gate-form" class="gate-form">
+        <div class="form-group">
+          <label for="gate-email">Seu e-mail cadastrado</label>
+          <input type="email" id="gate-email" placeholder="seu@email.com" autocomplete="email">
+        </div>
+        <div class="form-group">
+          <label for="gate-phone">Seu WhatsApp (com DDD)</label>
+          <input type="tel" id="gate-phone" placeholder="11999999999" autocomplete="tel">
+        </div>
+        <button type="submit" id="gate-submit" class="btn-primary">
+          <span class="btn-text">Verificar acesso</span>
+          <span class="btn-loading" style="display:none;">Verificando...</span>
+        </button>
+        <p id="gate-error" class="error-message" style="display:none;"></p>
+      </form>
+
+      <p class="gate-footer">Ainda não é membro? <a href="https://comunidade-genesisia.appsbrasil.store" target="_blank" rel="noopener noreferrer">Conheça a Comunidade Gênesis IA</a></p>
+    </div>
+  </div>
+
+  <!-- API KEY SETUP -->
+  <div id="key-screen" class="screen">
+    <div class="key-container">
+      <h2>Configure sua chave de IA</h2>
+      <p class="subtitle">Sua chave fica salva apenas no seu navegador. Nunca é enviada aos nossos servidores — a geração roda direto na sua conta (BYOK).</p>
+
+      <div id="key-inputs" class="key-inputs"></div>
+
+      <div class="key-actions">
+        <button id="key-continue" class="btn-primary" disabled="">Entrar no estúdio</button>
+        <button id="key-skip" class="btn-secondary">Pular por enquanto</button>
+      </div>
+
+      <details class="key-info">
+        <summary>Como consigo uma chave de API?</summary>
+        <div class="key-info-content">
+          <p><strong>OpenRouter (recomendado):</strong> uma única chave acessa Claude, GPT, Gemini, DeepSeek e mais. Crie em <code>openrouter.ai/keys</code>.</p>
+          <p><strong>OpenAI:</strong> crie em <code>platform.openai.com/api-keys</code>.</p>
+          <p>Você paga o consumo direto ao provedor — sem margem nossa. O custo por anúncio é de centavos.</p>
+        </div>
+      </details>
+    </div>
+  </div>
+
+  <!-- MAIN APPLICATION -->
+  <div id="app-screen" class="screen">
+    <header class="app-header">
+      <div class="header-left">
+        <span class="header-mark" aria-hidden="true"><span class="p"></span><span class="lg a"></span><span class="lg b"></span></span>
+        <h1 class="app-title">Anúncios <span class="hl">IA</span></h1>
+      </div>
+      <div class="header-right">
+        <a aria-label="Sobre" class="btn-icon" href="/about" title="Sobre esta ferramenta">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+        </a>
+        <button id="manage-keys-btn" class="btn-icon" title="Gerenciar chaves de API" aria-label="Chaves">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 1 1-7.778 7.778 5.5 5.5 0 0 1 7.777-7.777zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3m-3.5 3.5L19 4"></path></svg>
+        </button>
+        <button id="logout-btn" class="btn-icon" title="Sair" aria-label="Sair">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg>
+        </button>
+      </div>
+    </header>
+
+    <main class="app-main">
+      <div class="studio">
+
+        <!-- BRIEF PANEL -->
+        <section class="panel brief-panel">
+          <div class="panel-head">
+            <h2>Briefing</h2>
+            <span class="tag">DA OFERTA AO CRIATIVO</span>
+          </div>
+          <div class="panel-body">
+            <div class="field">
+              <label for="in-oferta">Oferta / produto</label>
+              <textarea id="in-oferta" placeholder="Ex.: Mentoria de 8 semanas que ensina donos de pequenos negócios a usar IA para vender mais no WhatsApp. R$ 997, com garantia de 7 dias."></textarea>
+              <div class="hint">Quanto mais concreto (o que é, para quem, preço, diferencial), melhor a copy.</div>
+            </div>
+
+            <div class="field">
+              <label for="in-publico">Público-alvo</label>
+              <input type="text" id="in-publico" placeholder="Ex.: donos de pequenos negócios, 30-50 anos, sem tempo">
+            </div>
+
+            <div class="field">
+              <label>Objetivo da campanha</label>
+              <div class="chips" id="chips-objetivo" role="group" aria-label="Objetivo">
+                <span class="chip active red" data-val="Conversão / vendas">Conversão</span>
+                <span class="chip" data-val="Geração de leads">Leads</span>
+                <span class="chip" data-val="Tráfego para o site">Tráfego</span>
+                <span class="chip" data-val="Engajamento / alcance">Engajamento</span>
+              </div>
+            </div>
+
+            <div class="field">
+              <label>Plataforma / formato</label>
+              <div class="chips" id="chips-plataforma" role="group" aria-label="Plataforma">
+                <span class="chip active red" data-val="meta_feed">Feed (Meta)</span>
+                <span class="chip" data-val="stories">Stories</span>
+                <span class="chip" data-val="reels">Reels</span>
+                <span class="chip" data-val="google_search">Google Search</span>
+              </div>
+            </div>
+
+            <div class="field">
+              <label>Tom de voz</label>
+              <div class="chips" id="chips-tom" role="group" aria-label="Tom">
+                <span class="chip active" data-val="Direto e persuasivo">Direto</span>
+                <span class="chip" data-val="Emocional e empático">Emocional</span>
+                <span class="chip" data-val="Divertido e leve">Divertido</span>
+                <span class="chip" data-val="Autoridade e técnico">Autoridade</span>
+                <span class="chip" data-val="Urgência e escassez">Urgência</span>
+              </div>
+            </div>
+
+            <div class="field">
+              <label for="in-marca">Nome do perfil / marca <span style="text-transform:none;letter-spacing:0;color:var(--ink-3)">(aparece no mockup)</span></label>
+              <input type="text" id="in-marca" placeholder="Ex.: Método Vende com IA">
+            </div>
+
+            <div class="field">
+              <label for="model-select">Modelo de IA</label>
+              <div class="model-row">
+                <select id="model-select" aria-label="Modelo de IA"></select>
+              </div>
+              <div class="hint">OpenRouter acessa todos os modelos; modelos Google e OpenAI também funcionam com a chave nativa do provedor.</div>
+            </div>
+
+            <button id="generate-btn" class="btn-primary gen-btn">Gerar campanha</button>
+            <div class="gen-note" id="gen-note">3 ângulos × variações de copy + mockup</div>
+          </div>
+        </section>
+
+        <!-- STAGE PANEL -->
+        <section class="panel stage-panel">
+          <div class="tabs" role="tablist">
+            <button class="tab active" data-tab="preview" role="tab">Prévia</button>
+            <button class="tab" data-tab="copy" role="tab">Copy</button>
+            <button class="tab" data-tab="brief" role="tab">Brief</button>
+          </div>
+
+          <!-- PREVIEW TAB -->
+          <div class="tab-panel active" id="tab-preview" role="tabpanel">
+            <div id="preview-empty" class="empty-state">
+              <div class="es-glyph" aria-hidden="true"><span class="p"></span><span class="lg a"></span><span class="lg b"></span></div>
+              <h3>Seu anúncio no ar</h3>
+              <p>Preencha o briefing à esquerda e clique em <strong>Gerar campanha</strong>. O mockup do seu anúncio aparece aqui, pronto para aprovar e exportar.</p>
+            </div>
+
+            <div id="preview-loading" class="loading-state" style="display:none;">
+              <div class="spinner"></div>
+              <h3 id="loading-title">Criando os anúncios…</h3>
+              <p style="margin-top:8px;font-size:13px">Escrevendo ângulos, variações e montando o mockup.</p>
+            </div>
+
+            <div id="preview-content" style="display:none;">
+              <div class="angle-switch" id="angle-switch"></div>
+              <div class="mock-controls">
+                <span class="hl-cycler" id="platform-label">FEED · META</span>
+                <span class="hl-cycler">
+                  <button id="hl-prev" aria-label="Headline anterior">‹</button>
+                  <span id="hl-indicator">TÍTULO 1/1</span>
+                  <button id="hl-next" aria-label="Próximo headline">›</button>
+                </span>
+              </div>
+              <div class="billboard-frame">
+                <span class="bolt tl"></span><span class="bolt tr"></span><span class="bolt bl"></span><span class="bolt br"></span>
+                <div id="ad-mock-host"></div>
+                <div class="legs"><span class="a"></span><span class="b"></span></div>
+              </div>
+              <div class="export-bar">
+                <button id="btn-copy-current">📋 Copiar este anúncio</button>
+                <button id="btn-download-png" class="primary">🖼️ Baixar mockup (PNG)</button>
+                <button id="btn-download-brief">📄 Baixar brief (HTML)</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- COPY TAB -->
+          <div class="tab-panel" id="tab-copy" role="tabpanel">
+            <div id="copy-empty" class="empty-state">
+              <p>As variações de copy — headlines, textos primários, descrição e CTA de cada ângulo — aparecem aqui depois de gerar.</p>
+            </div>
+            <div id="copy-content"></div>
+          </div>
+
+          <!-- BRIEF TAB -->
+          <div class="tab-panel" id="tab-brief" role="tabpanel">
+            <div id="brief-empty" class="empty-state">
+              <p>Um resumo da campanha (oferta, público, objetivo e todos os ângulos) aparece aqui para copiar ou baixar.</p>
+            </div>
+            <div id="brief-content" class="brief-out"></div>
+          </div>
+        </section>
+
+      </div>
+    </main>
+
+    <footer class="app-footer">
+      <p>Feito com carinho para a comunidade <strong>Gênesis IA</strong></p>
+      <p class="footer-links">
+        <a href="/about">Sobre</a>
+        <span class="footer-sep">·</span>
+        <a href="/privacy-policy" rel="noopener noreferrer" target="_blank">Política de Privacidade</a>
+        <span class="footer-sep">·</span>
+        <a href="/data-deletion" rel="noopener noreferrer" target="_blank">Excluir meus dados</a>
+      </p>
+    </footer>
+  </div>
+
+  <!-- API Key Manager Modal -->
+  <div id="key-modal" class="modal" style="display:none;">
+    <div class="modal-overlay"></div>
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3>Chaves de API</h3>
+        <button id="modal-close" class="btn-icon" aria-label="Fechar">×</button>
+      </div>
+      <div id="modal-key-inputs" class="key-inputs"></div>
+      <div class="modal-actions">
+        <button id="modal-save" class="btn-primary">Salvar</button>
+        <button id="modal-clear" class="btn-danger">Limpar todas as chaves</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="toast" class="toast" role="status" aria-live="polite"></div>
+
+  <script src="js/config.js"></script>
+  <script src="js/kill-switch.js"></script>
+  <script src="js/rate-limiter.js"></script>
+  <script src="js/membership-gate.js"></script>
+  <script src="js/api-key-manager.js"></script>
+  <script src="js/feedback-widget.js"></script>
+  <script src="js/app.js"></script>
+
+
+</body></html>

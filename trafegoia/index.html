@@ -1,0 +1,262 @@
+<!DOCTYPE html><html lang="pt-BR"><head>
+  <script>/* gate-bootstrap: capture an early login submit before the remote gate wires up, so the first click is never lost */
+  (function(){function h(e){var f=e.target;if(f&&f.id==='gate-form'&&!window.MembershipGate){e.preventDefault();e.stopImmediatePropagation();window.__gateEarlySubmit=true;}}window.addEventListener('submit',h,true);window.__gateBootstrapDisarm=function(){window.removeEventListener('submit',h,true);};})();</script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Tráfego IA — Gênesis IA</title>
+  <meta name="description" content="Planejador de mídia e projeção de resultados para tráfego pago — verba, ROAS, CAC e plano de campanha prontos para o cliente.">
+  <link rel="stylesheet" href="css/styles.css">
+  <link rel="preconnect" href="https://gate.appsbrasil.store">
+  <link rel="preload" href="https://gate.appsbrasil.store/v1/membership-gate.js" as="script">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%230b1220'/%3E%3Crect x='7' y='17' width='4' height='8' rx='1' fill='%2322d3ee'/%3E%3Crect x='14' y='12' width='4' height='13' rx='1' fill='%2322c55e'/%3E%3Crect x='21' y='7' width='4' height='18' rx='1' fill='%23f5b301'/%3E%3C/svg%3E">
+</head>
+<body>
+  <div class="bg-gradient"></div>
+
+  <!-- ============================ MEMBERSHIP GATE ============================ -->
+  <div id="gate-screen" class="screen active">
+    <div class="gate-container">
+      <div class="gate-header">
+        <div class="brand-glyph" aria-hidden="true">
+          <svg width="34" height="34" viewBox="0 0 34 34" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <line x1="8" y1="7" x2="8" y2="27" stroke="#ef5350" stroke-width="1.4"></line>
+            <rect x="5.5" y="12" width="5" height="9" rx="1" fill="#ef5350"></rect>
+            <line x1="17" y1="5" x2="17" y2="26" stroke="#29d17e" stroke-width="1.4"></line>
+            <rect x="14.5" y="9" width="5" height="11" rx="1" fill="#29d17e"></rect>
+            <line x1="26" y1="8" x2="26" y2="24" stroke="#f5b301" stroke-width="1.4"></line>
+            <rect x="23.5" y="11" width="5" height="8" rx="1" fill="#f5b301"></rect>
+          </svg>
+        </div>
+        <h1 class="gradient-text">Tráfego <span class="hl">IA</span></h1>
+        <p class="subtitle">Planejador de mídia e projeção de resultados para tráfego pago. Verba → impressões, cliques, leads, vendas, <strong>ROAS</strong>, CAC e o plano de campanha — pronto para o cliente.</p>
+        <p class="community-badge">Exclusivo para membros da Comunidade Gênesis IA</p>
+      </div>
+
+      <form id="gate-form" class="gate-form">
+        <div class="form-group">
+          <label for="gate-email">Seu e-mail cadastrado</label>
+          <input type="email" id="gate-email" placeholder="seu@email.com" autocomplete="email">
+        </div>
+        <div class="form-group">
+          <label for="gate-phone">Seu WhatsApp (com DDD)</label>
+          <input type="tel" id="gate-phone" placeholder="11999999999" autocomplete="tel">
+        </div>
+        <button type="submit" id="gate-submit" class="btn-primary">
+          <span class="btn-text">Acessar o painel</span>
+          <span class="btn-loading" style="display:none;">Verificando...</span>
+        </button>
+        <p id="gate-error" class="error-message" style="display:none;"></p>
+      </form>
+
+      <p class="gate-footer">Ainda não é membro? <a href="https://comunidade-genesisia.appsbrasil.store" target="_blank" rel="noopener noreferrer">Conheça a Comunidade Gênesis IA</a></p>
+    </div>
+  </div>
+
+  <!-- ============================ API KEY SETUP ============================ -->
+  <div id="key-screen" class="screen">
+    <div class="key-container">
+      <h2>Configure sua chave de IA</h2>
+      <p class="subtitle">Sua chave fica salva apenas no seu navegador (localStorage). Nunca é enviada para nossos servidores. A IA roda 100% na sua chave (BYOK).</p>
+
+      <div class="key-model-row">
+        <label for="key-model-select">Modelo de IA para o plano</label>
+        <select id="key-model-select"></select>
+      </div>
+
+      <div id="key-inputs" class="key-inputs">
+        <!-- Populated by api-key-manager.js -->
+      </div>
+
+      <div class="key-actions">
+        <button id="key-continue" class="btn-primary" disabled="">Continuar para o painel</button>
+        <button id="key-skip" class="btn-secondary">Pular por enquanto</button>
+      </div>
+
+      <details class="key-info">
+        <summary>Como consigo uma chave de API?</summary>
+        <div class="key-info-content">
+          <p><strong>OpenRouter (recomendado):</strong> uma única chave acessa Claude, GPT, Gemini, DeepSeek e mais. Crie em <code>openrouter.ai/keys</code>.</p>
+          <p><strong>OpenAI:</strong> <code>platform.openai.com/api-keys</code></p>
+          <p><strong>Anthropic (Claude):</strong> <code>console.anthropic.com</code></p>
+          <p><strong>Google (Gemini):</strong> <code>aistudio.google.com/apikey</code></p>
+        </div>
+      </details>
+    </div>
+  </div>
+
+  <!-- ============================ MAIN APP — THE DESK ============================ -->
+  <div id="app-screen" class="screen">
+    <header class="app-header">
+      <div class="header-left">
+        <span class="mini-glyph" aria-hidden="true">
+          <svg width="22" height="22" viewBox="0 0 34 34" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <line x1="8" y1="7" x2="8" y2="27" stroke="#ef5350" stroke-width="1.6"></line>
+            <rect x="5.5" y="12" width="5" height="9" rx="1" fill="#ef5350"></rect>
+            <line x1="17" y1="5" x2="17" y2="26" stroke="#29d17e" stroke-width="1.6"></line>
+            <rect x="14.5" y="9" width="5" height="11" rx="1" fill="#29d17e"></rect>
+            <line x1="26" y1="8" x2="26" y2="24" stroke="#f5b301" stroke-width="1.6"></line>
+            <rect x="23.5" y="11" width="5" height="8" rx="1" fill="#f5b301"></rect>
+          </svg>
+        </span>
+        <h1 class="app-title">Tráfego <span class="hl">IA</span></h1>
+      </div>
+      <div class="header-right">
+        <a aria-label="Sobre" class="btn-icon" href="/about" title="Sobre esta ferramenta">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+        </a>
+        <button id="manage-keys-btn" class="btn-icon" title="Gerenciar chave de API" aria-label="Chaves">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 1 1-7.778 7.778 5.5 5.5 0 0 1 7.777-7.777zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3m-3.5 3.5L19 4"></path></svg>
+        </button>
+        <button id="logout-btn" class="btn-icon" title="Sair" aria-label="Sair">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg>
+        </button>
+      </div>
+    </header>
+
+    <!-- ticker strip -->
+    <div class="ticker" id="ticker" aria-hidden="true">
+      <span class="ticker-item"><span class="ticker-dot"></span><b>TRÁFEGO PAGO</b> · painel de projeção</span>
+      <span class="ticker-item">ROAS <span class="up">▲</span></span>
+      <span class="ticker-item">CAC</span>
+      <span class="ticker-item">CPL</span>
+      <span class="ticker-item">CPM</span>
+      <span class="ticker-item">CTR</span>
+      <span class="ticker-item">LUCRO <span class="up">▲</span></span>
+    </div>
+
+    <main class="app-main">
+      <div class="studio">
+        <!-- ---------------- BRIEF ---------------- -->
+        <section class="panel brief-panel">
+          <div class="panel-head">
+            <h2>Briefing da campanha</h2>
+            <span class="panel-title-mono">INPUT</span>
+          </div>
+
+          <div class="field">
+            <label>Objetivo da campanha</label>
+            <div class="chips" id="chips-objetivo" data-value="vendas">
+              <span class="chip active" data-val="vendas">Vendas diretas</span>
+              <span class="chip" data-val="leads">Geração de leads</span>
+              <span class="chip" data-val="agendamentos">Agendamentos</span>
+            </div>
+          </div>
+
+          <div class="field">
+            <label>Plataforma</label>
+            <div class="chips" id="chips-plataforma" data-value="meta">
+              <span class="chip active" data-val="meta">Meta Ads</span>
+              <span class="chip" data-val="google">Google Ads</span>
+              <span class="chip" data-val="tiktok">TikTok Ads</span>
+            </div>
+          </div>
+
+          <div class="field">
+            <label for="in-nicho">Nicho / segmento</label>
+            <input type="text" id="in-nicho" placeholder="ex: emagrecimento feminino, curso de inglês, estética facial">
+            <div class="field-hint">Quanto mais específico, melhores os benchmarks da IA.</div>
+          </div>
+
+          <div class="field">
+            <label for="in-produto">Produto / oferta <span style="opacity:.6">(opcional)</span></label>
+            <input type="text" id="in-produto" placeholder="ex: mentoria de 12 semanas, ebook, consultoria">
+          </div>
+
+          <div class="field-2">
+            <div class="field">
+              <label for="in-ticket">Ticket médio</label>
+              <div class="input-affix"><span class="affix">R$</span><input type="number" id="in-ticket" inputmode="decimal" min="0" step="1" placeholder="497" value="497"></div>
+            </div>
+            <div class="field">
+              <label for="in-margem">Margem</label>
+              <div class="input-affix suffix"><input type="number" id="in-margem" inputmode="decimal" min="1" max="100" step="1" placeholder="80" value="80"><span class="affix">%</span></div>
+            </div>
+          </div>
+          <div class="field-hint" style="margin-top:-8px;margin-bottom:16px">Margem = % do faturamento que sobra <em>antes</em> do custo de tráfego (produto/serviço). Infoproduto costuma ser 85–95%.</div>
+
+          <div class="field">
+            <label>Orçamento</label>
+            <div class="chips" id="chips-modo" data-value="diario" style="margin-bottom:8px">
+              <span class="chip active" data-val="diario">Diário</span>
+              <span class="chip" data-val="total">Total</span>
+            </div>
+            <div class="field-2">
+              <div class="input-affix"><span class="affix">R$</span><input type="number" id="in-verba" inputmode="decimal" min="0" step="1" placeholder="100" value="100" aria-label="Valor do orçamento"></div>
+              <div class="input-affix suffix"><input type="number" id="in-dias" inputmode="numeric" min="1" step="1" placeholder="30" value="30" aria-label="Período em dias"><span class="affix" id="dias-affix">dias</span></div>
+            </div>
+            <div class="field-hint" id="verba-hint">Verba total do período: <span class="mono" id="verba-total">R$ 3.000</span></div>
+          </div>
+
+          <div class="field">
+            <label for="model-select">Modelo de IA</label>
+            <select id="model-select"></select>
+          </div>
+
+          <button id="btn-gerar" class="btn-primary gen-btn">Gerar plano de mídia</button>
+          <p class="gen-hint" id="gen-hint">A IA preenche os benchmarks do nicho e escreve o plano; o cálculo é instantâneo.</p>
+        </section>
+
+        <!-- ---------------- RESULTS ---------------- -->
+        <section class="results-panel" id="results">
+          <div class="state" id="empty-state">
+            <div class="state-glyph" aria-hidden="true">
+              <svg width="52" height="52" viewBox="0 0 34 34" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <line x1="8" y1="7" x2="8" y2="27" stroke="currentColor" stroke-width="1.2"></line>
+                <rect x="5.5" y="12" width="5" height="9" rx="1" fill="currentColor"></rect>
+                <line x1="17" y1="5" x2="17" y2="26" stroke="currentColor" stroke-width="1.2"></line>
+                <rect x="14.5" y="9" width="5" height="11" rx="1" fill="currentColor"></rect>
+                <line x1="26" y1="8" x2="26" y2="24" stroke="currentColor" stroke-width="1.2"></line>
+                <rect x="23.5" y="11" width="5" height="8" rx="1" fill="currentColor"></rect>
+              </svg>
+            </div>
+            <h3>Seu painel de projeção aparece aqui</h3>
+            <p>Preencha o briefing ao lado e clique em <strong>Gerar plano de mídia</strong>. Você recebe a projeção de resultados em 3 cenários, os benchmarks editáveis e o plano de campanha completo — pronto para exportar.</p>
+          </div>
+        </section>
+      </div>
+
+      <footer class="app-footer">
+        <p>Feito com carinho para a comunidade <strong>Gênesis IA</strong></p>
+        <p class="footer-links">
+          <a href="/about">Sobre</a>
+          <span class="footer-sep">·</span>
+          <a href="/privacy-policy" rel="noopener noreferrer" target="_blank">Política de Privacidade</a>
+          <span class="footer-sep">·</span>
+          <a href="/data-deletion" rel="noopener noreferrer" target="_blank">Solicitar Exclusão de Dados</a>
+        </p>
+      </footer>
+    </main>
+  </div>
+
+  <!-- ============================ KEY MANAGER MODAL ============================ -->
+  <div id="key-modal" class="modal" style="display:none;">
+    <div class="modal-overlay"></div>
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3>Chave de API & Modelo</h3>
+        <button id="modal-close" class="btn-icon" aria-label="Fechar">×</button>
+      </div>
+      <div class="key-model-row" style="margin-top:0;margin-bottom:16px">
+        <label for="model-select-modal">Modelo de IA</label>
+        <select id="model-select-modal"></select>
+      </div>
+      <div id="modal-key-inputs" class="key-inputs"></div>
+      <div class="modal-actions">
+        <button id="modal-save" class="btn-primary">Salvar</button>
+        <button id="modal-clear" class="btn-danger">Limpar todas as chaves</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+  <script src="js/config.js"></script>
+  <script src="js/kill-switch.js"></script>
+  <script src="js/rate-limiter.js"></script>
+  <script src="js/membership-gate.js"></script>
+  <script src="js/api-key-manager.js"></script>
+  <script src="js/feedback-widget.js"></script>
+  <script src="js/app.js"></script>
+
+
+</body></html>

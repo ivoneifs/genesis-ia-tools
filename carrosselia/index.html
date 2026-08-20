@@ -1,0 +1,254 @@
+<!DOCTYPE html><html lang="pt-BR"><head>
+  <script>/* gate-bootstrap: capture an early login submit before the remote gate wires up, so the first click is never lost */
+  (function(){function h(e){var f=e.target;if(f&&f.id==='gate-form'&&!window.MembershipGate){e.preventDefault();e.stopImmediatePropagation();window.__gateEarlySubmit=true;}}window.addEventListener('submit',h,true);window.__gateBootstrapDisarm=function(){window.removeEventListener('submit',h,true);};})();</script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Carrossel IA — Gênesis IA</title>
+  <link rel="stylesheet" href="css/styles.css">
+  <link rel="preconnect" href="https://gate.appsbrasil.store">
+  <link rel="preload" href="https://gate.appsbrasil.store/v1/membership-gate.js" as="script">
+</head>
+<body>
+  <div class="bg-gradient"></div>
+
+  <!-- MEMBERSHIP GATE -->
+  <div id="gate-screen" class="screen active">
+    <div class="gate-container">
+      <div class="gate-header">
+        <h1 class="brand-mark">Carrossel IA</h1>
+        <p class="subtitle">Gera as <strong>imagens reais</strong> do seu carrossel para Instagram, LinkedIn e TikTok — a IA escreve o roteiro e um prompt visual por slide, e o modelo de imagem (fal.ai ou OpenAI, com a sua chave) renderiza cada imagem pronta para baixar e publicar.</p>
+        <p class="community-badge">Exclusivo para membros da Comunidade Gênesis IA</p>
+      </div>
+
+      <form id="gate-form" class="gate-form">
+        <div class="form-group">
+          <label for="gate-email">Seu e-mail cadastrado</label>
+          <input type="email" id="gate-email" placeholder="seu@email.com" autocomplete="email">
+        </div>
+        <div class="form-group">
+          <label for="gate-phone">Seu WhatsApp (com DDD)</label>
+          <input type="tel" id="gate-phone" placeholder="11999999999" autocomplete="tel">
+        </div>
+        <button type="submit" id="gate-submit" class="btn-primary">
+          <span class="btn-text">Verificar acesso</span>
+          <span class="btn-loading" style="display:none;">Verificando...</span>
+        </button>
+        <p id="gate-error" class="error-message" style="display:none;"></p>
+      </form>
+
+      <p class="gate-footer">Ainda não é membro? <a href="https://comunidade-genesisia.appsbrasil.store" target="_blank" rel="noopener noreferrer">Conheça a Comunidade Gênesis IA</a></p>
+    </div>
+  </div>
+
+  <!-- API KEY SETUP (shown after membership verification) -->
+  <div id="key-screen" class="screen">
+    <div class="key-container">
+      <h2>Configure suas chaves de API</h2>
+      <p class="subtitle">Suas chaves ficam salvas apenas no seu navegador. Nunca são enviadas para nossos servidores.</p>
+
+      <div id="key-inputs" class="key-inputs">
+        <!-- Dynamically populated by api-key-manager.js (OpenRouter/OpenAI = texto, FAL.AI = imagens) -->
+      </div>
+
+      <div class="key-actions">
+        <button id="key-continue" class="btn-primary" disabled="">Continuar para a ferramenta</button>
+        <button id="key-skip" class="btn-secondary">Pular por enquanto</button>
+      </div>
+
+      <details class="key-info">
+        <summary>Como consigo minhas chaves de API?</summary>
+        <div class="key-info-content">
+          <p><strong>Texto (roteiro do carrossel) — OpenRouter:</strong> acesse <code>openrouter.ai/keys</code>. Uma única chave acessa Claude, GPT, Gemini, DeepSeek e mais. (Alternativa: OpenAI em <code>platform.openai.com/api-keys</code>.)</p>
+          <p><strong>Imagens (fal.ai):</strong> acesse <code>fal.ai/dashboard/keys</code>, adicione créditos e crie uma chave. Cada imagem gerada consome créditos da <em>sua</em> conta fal.ai — as chaves ficam só no seu navegador.</p>
+          <p><strong>Imagens (OpenAI):</strong> a mesma chave OpenAI (<code>platform.openai.com/api-keys</code>) também gera imagens com o <em>GPT Image</em> — basta escolher um modelo do grupo "OpenAI" no seletor de modelo de imagem. Não precisa de conta fal.ai.</p>
+        </div>
+      </details>
+    </div>
+  </div>
+
+  <!-- MAIN APPLICATION -->
+  <div id="app-screen" class="screen">
+    <header class="app-header">
+      <div class="header-left">
+        <h1 class="app-title">Carrossel IA</h1>
+      </div>
+      <div class="header-right">
+        <a aria-label="Sobre" class="btn-icon" href="/about" title="Sobre esta ferramenta">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+        </a>
+        <button id="manage-keys-btn" class="btn-icon" title="Gerenciar chaves de API">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 1 1-7.778 7.778 5.5 5.5 0 0 1 7.777-7.777zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3m-3.5 3.5L19 4"></path></svg>
+        </button>
+        <button id="logout-btn" class="btn-icon" title="Sair">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg>
+        </button>
+      </div>
+    </header>
+
+    <main class="app-main">
+      <div class="studio">
+        <!-- LEFT: the brief panel -->
+        <aside class="brief-panel">
+          <div class="panel-title">Briefing</div>
+          <div class="panel-kicker">Olá, <span id="user-name">Maestro</span></div>
+
+          <div class="field">
+            <label for="f-tema">Tema / assunto do carrossel</label>
+            <textarea id="f-tema" placeholder="Ex.: 5 prompts de IA que economizam 2 horas por dia no trabalho"></textarea>
+          </div>
+
+          <div class="field">
+            <label>Plataforma</label>
+            <div class="seg" id="seg-plataforma">
+              <button type="button" data-val="Instagram" class="active">Instagram</button>
+              <button type="button" data-val="LinkedIn">LinkedIn</button>
+              <button type="button" data-val="TikTok">TikTok</button>
+            </div>
+          </div>
+
+          <div class="field">
+            <label>Objetivo</label>
+            <div class="seg seg-wrap" id="seg-objetivo">
+              <button type="button" data-val="Educar" class="active">Educar</button>
+              <button type="button" data-val="Engajar">Engajar</button>
+              <button type="button" data-val="Vender">Vender</button>
+              <button type="button" data-val="Autoridade">Autoridade</button>
+              <button type="button" data-val="Storytelling">Storytelling</button>
+            </div>
+          </div>
+
+          <div class="field">
+            <label>Número de slides</label>
+            <div class="seg" id="seg-slides">
+              <button type="button" data-val="5">5</button>
+              <button type="button" data-val="7" class="active">7</button>
+              <button type="button" data-val="10">10</button>
+            </div>
+          </div>
+
+          <div class="field-row">
+            <div class="field">
+              <label for="f-tom">Tom</label>
+              <select id="f-tom">
+                <option value="Profissional e claro">Profissional e claro</option>
+                <option value="Didático e calmo">Didático e calmo</option>
+                <option value="Direto e enérgico">Direto e enérgico</option>
+                <option value="Divertido e leve">Divertido e leve</option>
+                <option value="Inspirador">Inspirador</option>
+                <option value="Provocativo / polêmico">Provocativo</option>
+              </select>
+            </div>
+            <div class="field">
+              <label for="f-publico">Público-alvo</label>
+              <input type="text" id="f-publico" placeholder="Ex.: empreendedores">
+            </div>
+          </div>
+
+          <div class="field-row">
+            <div class="field">
+              <label for="f-cta">Chamada para ação (CTA)</label>
+              <input type="text" id="f-cta" placeholder="Ex.: Salve este post e siga">
+            </div>
+            <div class="field">
+              <label for="f-handle">@ do perfil (opcional)</label>
+              <input type="text" id="f-handle" placeholder="@seuperfil">
+            </div>
+          </div>
+
+          <div class="panel-divider"><span>Imagens</span></div>
+
+          <div class="field">
+            <label>Formato da imagem</label>
+            <div class="seg" id="seg-aspect">
+              <button type="button" data-val="1:1" class="active">Quadrado 1:1</button>
+              <button type="button" data-val="4:5">Vertical 4:5</button>
+            </div>
+          </div>
+
+          <div class="field">
+            <label>Estilo visual</label>
+            <div class="seg seg-wrap" id="seg-estilo">
+              <button type="button" data-val="Fotográfico realista" class="active">Fotográfico</button>
+              <button type="button" data-val="Ilustração moderna flat">Ilustração</button>
+              <button type="button" data-val="3D render suave">3D</button>
+              <button type="button" data-val="Minimalista geométrico">Minimalista</button>
+              <button type="button" data-val="Gradiente abstrato vibrante">Abstrato</button>
+            </div>
+          </div>
+
+          <div class="field">
+            <label for="fal-model-select">Modelo de imagem (fal.ai ou OpenAI)</label>
+            <select id="fal-model-select"></select>
+          </div>
+
+          <label class="toggle-row" for="f-overlay">
+            <input type="checkbox" id="f-overlay" checked="">
+            <span class="toggle-track"><span class="toggle-thumb"></span></span>
+            <span class="toggle-label">Sobrepor o texto do slide sobre a imagem<small>Desligado, você recebe a imagem pura da IA (sem texto), para diagramar do seu jeito.</small></span>
+          </label>
+
+          <div class="field">
+            <label for="model-select">Modelo de texto (roteiro — via OpenRouter)</label>
+            <select id="model-select"></select>
+          </div>
+
+          <p class="byok-note"><strong>BYOK:</strong> o roteiro usa a sua chave de texto e cada imagem consome créditos da <strong>sua</strong> conta no provedor escolhido (fal.ai ou OpenAI). As chaves ficam só no seu navegador e nunca passam pelos nossos servidores.</p>
+
+          <div id="fal-warn" class="fal-warn" style="display:none;">
+            Adicione sua chave <strong>fal.ai</strong> (ícone da chave no topo) para gerar as imagens reais. Sem ela, o carrossel sai apenas como roteiro.
+          </div>
+
+          <button type="button" id="generate-btn" class="btn-primary btn-gen">Gerar carrossel com imagens</button>
+          <div id="gen-status" class="gen-status"></div>
+          <div id="gen-progress" class="gen-progress" style="display:none;">
+            <div class="gp-bar"><span id="gp-fill" class="gp-fill"></span></div>
+            <div id="gp-label" class="gp-label"></div>
+          </div>
+        </aside>
+
+        <!-- RIGHT: the carousel deck stage -->
+        <section class="stage" id="stage">
+          <div class="stage-empty" id="stage-empty">
+            <div class="empty-deck"><span></span><span></span><span></span></div>
+            <p>Preencha o briefing à esquerda e clique em <strong>Gerar carrossel com imagens</strong>. A IA escreve o roteiro e um prompt visual por slide; o modelo de imagem escolhido (fal.ai ou OpenAI, com a sua chave) renderiza a <strong>imagem real</strong> de cada slide. Elas aparecem aqui em um deck que você desliza — prontas para baixar (uma a uma ou em .zip) e publicar.</p>
+          </div>
+        </section>
+      </div>
+    </main>
+
+    <footer class="app-footer">
+      <p>Feito com carinho para a comunidade <strong>Gênesis IA</strong></p>
+      <p class="footer-links">
+        <a href="/privacy-policy" rel="noopener noreferrer" target="_blank">Política de Privacidade</a>
+        <span class="footer-sep">·</span>
+        <a href="/data-deletion" rel="noopener noreferrer" target="_blank">Solicitar Exclusão de Dados</a>
+      </p>
+    </footer>
+  </div>
+
+  <!-- API Key Manager Modal -->
+  <div id="key-modal" class="modal" style="display:none;">
+    <div class="modal-overlay"></div>
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3>Gerenciar Chaves de API</h3>
+        <button id="modal-close" class="btn-icon">×</button>
+      </div>
+      <div id="modal-key-inputs" class="key-inputs"></div>
+      <div class="modal-actions">
+        <button id="modal-save" class="btn-primary">Salvar</button>
+        <button id="modal-clear" class="btn-danger">Limpar todas as chaves</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="js/config.js"></script>
+  <script src="js/kill-switch.js"></script>
+  <script src="js/rate-limiter.js"></script>
+  <script src="js/membership-gate.js"></script>
+  <script src="js/api-key-manager.js"></script>
+  <script src="js/feedback-widget.js"></script>
+  <script src="js/app.js"></script>
+
+
+</body></html>

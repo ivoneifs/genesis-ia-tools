@@ -1,0 +1,265 @@
+<!DOCTYPE html><html lang="pt-BR"><head>
+  <script>/* gate-bootstrap: capture an early login submit before the remote gate wires up, so the first click is never lost */
+  (function(){function h(e){var f=e.target;if(f&&f.id==='gate-form'&&!window.MembershipGate){e.preventDefault();e.stopImmediatePropagation();window.__gateEarlySubmit=true;}}window.addEventListener('submit',h,true);window.__gateBootstrapDisarm=function(){window.removeEventListener('submit',h,true);};})();</script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Crect width='24' height='24' rx='5' fill='%230e0f13'/%3E%3Cpath d='M9 7l8 5-8 5z' fill='%23ff2e2e'/%3E%3C/svg%3E">
+  <title>Thumbnail IA — Gênesis IA</title>
+  <meta name="description" content="Gere thumbnails e capas de vídeo que convertem, prontas para baixar — cena real por IA + título de alto-CTR sobreposto, no tamanho exato de cada plataforma.">
+  <link rel="stylesheet" href="css/styles.css">
+  <link rel="preconnect" href="https://gate.appsbrasil.store">
+  <link rel="preload" href="https://gate.appsbrasil.store/v1/membership-gate.js" as="script">
+</head>
+<body>
+  <div class="bg-gradient"></div>
+
+  <!-- ============================ MEMBERSHIP GATE ============================ -->
+  <div id="gate-screen" class="screen active">
+    <div class="gate-container">
+      <div class="gate-header">
+        <div class="play-glyph" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="#ff2e2e"><path d="M6 4.5v15a1 1 0 0 0 1.5.87l13-7.5a1 1 0 0 0 0-1.74l-13-7.5A1 1 0 0 0 6 4.5z"></path></svg>
+        </div>
+        <h1 class="brand-mark">Thumbnail<span class="em"> IA</span></h1>
+        <p class="subtitle">Gere <strong>thumbnails e capas de vídeo que convertem</strong>, prontas para baixar. A IA cria a cena real e sobrepõe um <strong>título de alto-CTR</strong> no tamanho exato do YouTube, Shorts/Reels, capa de curso ou podcast.</p>
+        <p class="community-badge">Exclusivo para membros da Comunidade Gênesis IA</p>
+      </div>
+
+      <form id="gate-form" class="gate-form">
+        <div class="form-group">
+          <label for="gate-email">Seu e-mail cadastrado</label>
+          <input type="email" id="gate-email" placeholder="seu@email.com" autocomplete="email">
+        </div>
+        <div class="form-group">
+          <label for="gate-phone">Seu WhatsApp (com DDD)</label>
+          <input type="tel" id="gate-phone" placeholder="11999999999" autocomplete="tel">
+        </div>
+        <button type="submit" id="gate-submit" class="btn-primary">
+          <span class="btn-text">Verificar acesso</span>
+          <span class="btn-loading" style="display:none;">Verificando...</span>
+        </button>
+        <p id="gate-error" class="error-message" style="display:none;"></p>
+      </form>
+
+      <p class="gate-footer">Ainda não é membro? <a href="https://comunidade-genesisia.appsbrasil.store" target="_blank" rel="noopener noreferrer">Conheça a Comunidade Gênesis IA</a></p>
+    </div>
+  </div>
+
+  <!-- ============================ API KEY SETUP ============================ -->
+  <div id="key-screen" class="screen">
+    <div class="key-container">
+      <h2>Configure suas chaves</h2>
+      <p class="subtitle">Suas chaves ficam salvas apenas no seu navegador. Nunca são enviadas para nossos servidores.</p>
+
+      <div id="key-inputs" class="key-inputs">
+        <!-- Populated by api-key-manager.js (OpenRouter/OpenAI = texto, FAL.AI/OpenAI = imagem) -->
+      </div>
+
+      <div class="field" style="text-align:left;">
+        <label for="key-model-select">Modelo de texto padrão (via OpenRouter)</label>
+        <select id="key-model-select"></select>
+      </div>
+
+      <div class="key-actions">
+        <button id="key-continue" class="btn-primary" disabled="">Entrar no estúdio</button>
+        <button id="key-skip" class="btn-secondary">Pular por enquanto</button>
+      </div>
+
+      <details class="key-info">
+        <summary>Como consigo minhas chaves de API?</summary>
+        <div class="key-info-content">
+          <p><strong>Texto (título + prompt da cena) — OpenRouter:</strong> acesse <code>openrouter.ai/keys</code>. Uma única chave acessa Claude, GPT, Gemini, DeepSeek e mais. (Alternativa: OpenAI em <code>platform.openai.com/api-keys</code>.)</p>
+          <p><strong>Imagem da cena (fal.ai):</strong> acesse <code>fal.ai/dashboard/keys</code>, adicione créditos e crie uma chave. Cada cena gerada consome créditos da <em>sua</em> conta fal.ai.</p>
+          <p><strong>Imagem da cena (OpenAI):</strong> a mesma chave OpenAI também gera a cena com o <em>GPT Image</em> — basta escolher um modelo do grupo "OpenAI" no seletor de modelo de imagem. Não precisa de conta fal.ai.</p>
+        </div>
+      </details>
+    </div>
+  </div>
+
+  <!-- ============================ MAIN APP ============================ -->
+  <div id="app-screen" class="screen">
+    <header class="app-header">
+      <div class="header-left">
+        <h1 class="app-title">
+          <span class="dot-play" aria-hidden="true"><svg viewBox="0 0 24 24" fill="#fff"><path d="M7 4.5v15a1 1 0 0 0 1.5.87l13-7.5a1 1 0 0 0 0-1.74l-13-7.5A1 1 0 0 0 7 4.5z"></path></svg></span>
+          Thumbnail<span class="em"> IA</span>
+        </h1>
+      </div>
+      <div class="header-right">
+        <a aria-label="Sobre" class="btn-icon" href="/about" title="Sobre esta ferramenta">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+        </a>
+        <button id="manage-keys-btn" class="btn-icon" title="Gerenciar chaves de API" aria-label="Chaves">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 1 1-7.778 7.778 5.5 5.5 0 0 1 7.777-7.777zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3m-3.5 3.5L19 4"></path></svg>
+        </button>
+        <button id="logout-btn" class="btn-icon" title="Sair" aria-label="Sair">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg>
+        </button>
+      </div>
+    </header>
+
+    <main class="app-main">
+      <div class="studio">
+        <!-- LEFT: brief -->
+        <aside class="brief-panel">
+          <div class="panel-title">Briefing</div>
+          <div class="panel-kicker">Olá, <span id="user-name">Maestro</span> — vamos criar sua thumbnail</div>
+
+          <div class="field">
+            <label for="f-tema">Título / tema do vídeo</label>
+            <textarea id="f-tema" placeholder="Ex.: Como eu ganhei 10 mil seguidores em 30 dias usando IA"></textarea>
+          </div>
+
+          <div class="field">
+            <label>Plataforma / formato</label>
+            <div class="seg seg-wrap" id="seg-plataforma">
+              <button type="button" data-val="YouTube" class="active">YouTube 16:9</button>
+              <button type="button" data-val="Shorts/Reels">Shorts/Reels 9:16</button>
+              <button type="button" data-val="Capa de curso">Capa de curso</button>
+              <button type="button" data-val="Podcast">Podcast 1:1</button>
+            </div>
+          </div>
+
+          <div class="field">
+            <label>Ângulo emocional (CTR)</label>
+            <div class="seg seg-wrap" id="seg-emocao">
+              <button type="button" data-val="Choque / curiosidade" class="active">Curiosidade</button>
+              <button type="button" data-val="Autoridade">Autoridade</button>
+              <button type="button" data-val="Tutorial / didático">Tutorial</button>
+              <button type="button" data-val="Premium / aspiracional">Premium</button>
+              <button type="button" data-val="Divertido / meme">Divertido</button>
+            </div>
+          </div>
+
+          <div class="field">
+            <label>Número de variações</label>
+            <div class="seg" id="seg-variacoes">
+              <button type="button" data-val="2">2</button>
+              <button type="button" data-val="3" class="active">3</button>
+              <button type="button" data-val="4">4</button>
+            </div>
+          </div>
+
+          <div class="field-row">
+            <div class="field">
+              <label for="f-publico">Público-alvo</label>
+              <input type="text" id="f-publico" placeholder="Ex.: criadores iniciantes">
+            </div>
+            <div class="field">
+              <label for="f-canal">Nome do canal</label>
+              <input type="text" id="f-canal" placeholder="Ex.: Maestria IA">
+            </div>
+          </div>
+
+          <div class="panel-divider"><span>Cena</span></div>
+
+          <div class="field">
+            <label>Estilo visual da cena</label>
+            <div class="seg seg-wrap" id="seg-estilo">
+              <button type="button" data-val="Fotográfico realista" class="active">Fotográfico</button>
+              <button type="button" data-val="Ilustração moderna">Ilustração</button>
+              <button type="button" data-val="3D render">3D</button>
+              <button type="button" data-val="Cinematográfico dramático">Cinematográfico</button>
+              <button type="button" data-val="Gráfico / vetorial">Gráfico</button>
+            </div>
+          </div>
+
+          <div class="field-row">
+            <div class="field">
+              <label for="f-cor">Cor de destaque</label>
+              <input type="text" id="f-cor" placeholder="Ex.: amarelo, #ff2e2e">
+            </div>
+            <div class="field">
+              <label for="image-model-select">Modelo de imagem</label>
+              <select id="image-model-select"></select>
+            </div>
+          </div>
+
+          <label class="toggle-row" for="f-rosto">
+            <input type="checkbox" id="f-rosto" checked="">
+            <span class="toggle-track"><span class="toggle-thumb"></span></span>
+            <span class="toggle-label">Incluir rosto expressivo na cena<small>Rostos com emoção forte aumentam muito o clique (quando fizer sentido para o tema).</small></span>
+          </label>
+
+          <label class="toggle-row" for="f-overlay">
+            <input type="checkbox" id="f-overlay" checked="">
+            <span class="toggle-track"><span class="toggle-thumb"></span></span>
+            <span class="toggle-label">Sobrepor o título de alto-CTR<small>Desligado, você recebe só a cena pura da IA (sem texto) para diagramar do seu jeito.</small></span>
+          </label>
+
+          <div class="field">
+            <label for="model-select">Modelo de texto (título — via OpenRouter)</label>
+            <select id="model-select"></select>
+          </div>
+
+          <p class="byok-note"><strong>BYOK:</strong> o título usa a sua chave de texto e cada cena consome créditos da <strong>sua</strong> conta no provedor escolhido (fal.ai ou OpenAI). As chaves ficam só no seu navegador e nunca passam pelos nossos servidores.</p>
+
+          <div id="img-warn" class="img-warn">
+            Adicione sua chave <strong>fal.ai</strong> (ícone da chave no topo) para gerar as cenas reais — ou escolha um modelo de imagem da OpenAI, se você já tem uma chave OpenAI.
+          </div>
+
+          <button type="button" id="generate-btn" class="btn-primary btn-gen">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2 3 14h7l-1 8 10-12h-7l1-8z"></path></svg>
+            Gerar thumbnails
+          </button>
+          <div id="gen-status" class="gen-status"></div>
+          <div id="gen-progress" class="gen-progress" style="display:none;">
+            <div class="gp-bar"><span id="gp-fill" class="gp-fill"></span></div>
+            <div id="gp-label" class="gp-label"></div>
+          </div>
+        </aside>
+
+        <!-- RIGHT: stage -->
+        <section class="stage" id="stage">
+          <div class="stage-empty" id="stage-empty">
+            <div class="empty-player" aria-hidden="true">
+              <div class="ep-play"><svg viewBox="0 0 24 24" fill="#fff"><path d="M7 4.5v15a1 1 0 0 0 1.5.87l13-7.5a1 1 0 0 0 0-1.74l-13-7.5A1 1 0 0 0 7 4.5z"></path></svg></div>
+            </div>
+            <p>Preencha o briefing e clique em <strong>Gerar thumbnails</strong>. A IA escreve o título de impacto e o prompt visual; o modelo de imagem (fal.ai ou OpenAI, com a sua chave) renderiza a <strong>cena real</strong>; então o título de alto-CTR é composto por cima. Cada variação aparece dentro de um <strong>player de vídeo realista</strong> — pronta para baixar (uma a uma ou em .zip) e publicar.</p>
+          </div>
+        </section>
+      </div>
+    </main>
+
+    <footer class="app-footer">
+      <p>Feito com carinho para a comunidade <strong>Gênesis IA</strong></p>
+      <p class="footer-links">
+        <a href="/privacy-policy" rel="noopener noreferrer" target="_blank">Política de Privacidade</a>
+        <span class="footer-sep">·</span>
+        <a href="/data-deletion" rel="noopener noreferrer" target="_blank">Solicitar Exclusão de Dados</a>
+        <span class="footer-sep">·</span>
+        <a href="/about">Sobre</a>
+      </p>
+    </footer>
+  </div>
+
+  <!-- ============================ KEY MODAL ============================ -->
+  <div id="key-modal" class="modal" style="display:none;">
+    <div class="modal-overlay"></div>
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3>Gerenciar chaves</h3>
+        <button id="modal-close" class="btn-icon" aria-label="Fechar">×</button>
+      </div>
+      <div id="modal-key-inputs" class="key-inputs"></div>
+      <div class="modal-field">
+        <label for="model-select-modal">Modelo de texto padrão</label>
+        <select id="model-select-modal"></select>
+      </div>
+      <div class="modal-actions">
+        <button id="modal-save" class="btn-primary">Salvar</button>
+        <button id="modal-clear" class="btn-danger">Limpar todas</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="js/config.js"></script>
+  <script src="js/kill-switch.js"></script>
+  <script src="js/rate-limiter.js"></script>
+  <script src="js/membership-gate.js"></script>
+  <script src="js/api-key-manager.js"></script>
+  <script src="js/feedback-widget.js"></script>
+  <script src="js/app.js"></script>
+
+
+</body></html>

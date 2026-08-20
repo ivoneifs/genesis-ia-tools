@@ -1,0 +1,295 @@
+<!DOCTYPE html><html lang="pt-BR"><head>
+  <script>/* gate-bootstrap: capture an early login submit before the remote gate wires up, so the first click is never lost */
+  (function(){function h(e){var f=e.target;if(f&&f.id==='gate-form'&&!window.MembershipGate){e.preventDefault();e.stopImmediatePropagation();window.__gateEarlySubmit=true;}}window.addEventListener('submit',h,true);window.__gateBootstrapDisarm=function(){window.removeEventListener('submit',h,true);};})();</script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Contrato IA — Gênesis IA</title>
+  <meta name="description" content="Gere contratos profissionais prontos para assinar — prestação de serviços, social media, tráfego pago, freelance, consultoria, parceria e NDA. Ferramenta BYOK da Comunidade Gênesis IA.">
+  <link rel="stylesheet" href="css/styles.css">
+  <link rel="preconnect" href="https://gate.appsbrasil.store">
+  <link rel="preload" href="https://gate.appsbrasil.store/v1/membership-gate.js" as="script">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%238a2b2b' stroke-width='1.6'%3E%3Ccircle cx='12' cy='12' r='9'/%3E%3Ccircle cx='12' cy='12' r='5.5'/%3E%3Cpath d='M12 3v2M12 19v2M3 12h2M19 12h2'/%3E%3C/svg%3E">
+</head>
+<body>
+  <div class="bg-gradient"></div>
+
+  <!-- MEMBERSHIP GATE -->
+  <div id="gate-screen" class="screen active">
+    <div class="gate-container">
+      <div class="gate-header">
+        <div class="seal-mark" aria-hidden="true">
+          <svg viewBox="0 0 100 100" fill="none">
+            <circle cx="50" cy="50" r="44" stroke="#9a7b3f" stroke-width="1.5"></circle>
+            <circle cx="50" cy="50" r="38" stroke="#8a2b2b" stroke-width="2.5"></circle>
+            <circle cx="50" cy="50" r="24" stroke="#9a7b3f" stroke-width="1"></circle>
+            <g stroke="#8a2b2b" stroke-width="1.6" stroke-linecap="round">
+              <path d="M50 6v7M50 87v7M6 50h7M87 50h7M18.9 18.9l5 5M76.1 76.1l5 5M81.1 18.9l-5 5M23.9 76.1l-5 5"></path>
+            </g>
+            <path d="M38 46l8 8 16-16" stroke="#1b2b3a" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"></path>
+            <text x="50" y="72" text-anchor="middle" font-family="Georgia, serif" font-size="7.5" letter-spacing="1.5" fill="#1b2b3a">CONTRATO · IA</text>
+          </svg>
+        </div>
+        <h1 class="gradient-text">Contrato IA</h1>
+        <p class="subtitle">Contratos profissionais prontos para assinar, gerados com IA.</p>
+        <p class="community-badge">Exclusivo para membros da Comunidade Gênesis IA</p>
+      </div>
+
+      <form id="gate-form" class="gate-form">
+        <div class="form-group">
+          <label for="gate-email">Seu e-mail cadastrado</label>
+          <input type="email" id="gate-email" placeholder="seu@email.com" autocomplete="email">
+        </div>
+        <div class="form-group">
+          <label for="gate-phone">Seu WhatsApp (com DDD)</label>
+          <input type="tel" id="gate-phone" placeholder="11999999999" autocomplete="tel">
+        </div>
+        <button type="submit" id="gate-submit" class="btn-primary">
+          <span class="btn-text">Verificar acesso</span>
+          <span class="btn-loading" style="display:none;">Verificando...</span>
+        </button>
+        <p id="gate-error" class="error-message" style="display:none;"></p>
+      </form>
+
+      <p class="gate-footer">Ainda não é membro? <a href="https://comunidade-genesisia.appsbrasil.store" target="_blank" rel="noopener noreferrer">Conheça a Comunidade Gênesis IA</a></p>
+    </div>
+  </div>
+
+  <!-- API KEY SETUP (shown after membership verification) -->
+  <div id="key-screen" class="screen">
+    <div class="key-container">
+      <h2>Configure sua chave de API</h2>
+      <p class="subtitle">Sua chave fica salva apenas no seu navegador (BYOK). Nunca é enviada para nossos servidores — a IA roda na sua própria conta.</p>
+
+      <div id="key-inputs" class="key-inputs">
+        <!-- Dynamically populated by api-key-manager.js -->
+      </div>
+
+      <div class="key-actions">
+        <button id="key-continue" class="btn-primary" disabled="">Continuar para a ferramenta</button>
+        <button id="key-skip" class="btn-secondary">Pular por enquanto</button>
+      </div>
+
+      <details class="key-info">
+        <summary>Como consigo uma chave de API?</summary>
+        <div class="key-info-content">
+          <p><strong>OpenRouter (recomendado):</strong> uma única chave acessa Claude, GPT, Gemini, DeepSeek e mais. Crie em <code>openrouter.ai/keys</code>.</p>
+          <p><strong>OpenAI:</strong> acesse <code>platform.openai.com/api-keys</code> e crie uma nova chave.</p>
+        </div>
+      </details>
+    </div>
+  </div>
+
+  <!-- MAIN APPLICATION -->
+  <div id="app-screen" class="screen">
+    <header class="app-header">
+      <div class="header-left">
+        <h1 class="app-title">Contrato IA</h1>
+      </div>
+      <div class="header-right">
+        <a aria-label="Sobre" class="btn-icon" href="/about" title="Sobre esta ferramenta">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+        </a>
+        <button id="manage-keys-btn" class="btn-icon" title="Gerenciar chaves de API" aria-label="Gerenciar chaves">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 1 1-7.778 7.778 5.5 5.5 0 0 1 7.777-7.777zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3m-3.5 3.5L19 4"></path></svg>
+        </button>
+        <button id="logout-btn" class="btn-icon" title="Sair" aria-label="Sair">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg>
+        </button>
+      </div>
+    </header>
+
+    <main class="app-main">
+      <div class="studio">
+        <!-- ============ SPEC SHEET (inputs) ============ -->
+        <section class="spec-panel">
+          <div class="panel-head">
+            <span class="eyebrow">Minuta · Dados do contrato</span>
+            <h2>Redigir contrato</h2>
+            <p>Preencha os campos e gere um contrato completo, numerado e pronto para assinar.</p>
+          </div>
+
+          <div class="field">
+            <label>Tipo de contrato</label>
+            <div class="chips" id="type-chips">
+              <span class="chip active" data-type="Prestação de Serviços">Prestação de serviços</span>
+              <span class="chip" data-type="Gestão de Redes Sociais (Social Media)">Social media</span>
+              <span class="chip" data-type="Gestão de Tráfego Pago">Tráfego pago</span>
+              <span class="chip" data-type="Freelance / Projeto por Escopo">Freelance</span>
+              <span class="chip" data-type="Consultoria / Mentoria">Consultoria / mentoria</span>
+              <span class="chip" data-type="Parceria Comercial">Parceria</span>
+              <span class="chip" data-type="Confidencialidade (NDA)">NDA / sigilo</span>
+            </div>
+          </div>
+
+          <div class="field">
+            <label for="f-contratante">Contratante (cliente) — nome ou razão social</label>
+            <input type="text" id="f-contratante" placeholder="Ex.: Padaria do João LTDA / Maria Silva">
+          </div>
+
+          <div class="field">
+            <label for="f-contratado">Contratado (você / prestador) — nome ou razão social</label>
+            <input type="text" id="f-contratado" placeholder="Ex.: Studio Criativo ME / Seu Nome">
+          </div>
+
+          <div class="field">
+            <label for="f-objeto">Objeto / escopo do serviço</label>
+            <textarea id="f-objeto" rows="3" placeholder="Descreva o que será entregue. Ex.: gestão de Instagram e Facebook, 12 posts/mês, 8 stories/semana, 1 reunião mensal de alinhamento."></textarea>
+          </div>
+
+          <div class="field-row">
+            <div class="field">
+              <label for="f-valor">Valor</label>
+              <input type="text" id="f-valor" placeholder="R$ 2.500,00 / mês">
+            </div>
+            <div class="field">
+              <label for="f-prazo">Prazo / vigência</label>
+              <input type="text" id="f-prazo" placeholder="12 meses">
+            </div>
+          </div>
+
+          <div class="field">
+            <label for="f-pagamento">Forma de pagamento</label>
+            <input type="text" id="f-pagamento" placeholder="Ex.: mensal, todo dia 5, via Pix/boleto">
+          </div>
+
+          <div class="field-row">
+            <div class="field">
+              <label for="f-cidade">Cidade / foro</label>
+              <input type="text" id="f-cidade" placeholder="São Paulo/SP">
+            </div>
+            <div class="field">
+              <label for="f-data">Data do contrato</label>
+              <input type="text" id="f-data" placeholder="01/07/2026">
+            </div>
+          </div>
+
+          <div class="field">
+            <label for="f-extra">Cláusulas ou observações específicas <span style="text-transform:none;letter-spacing:0">(opcional)</span></label>
+            <textarea id="f-extra" rows="2" placeholder="Ex.: multa por atraso de 2%, exclusividade no nicho, direitos de imagem, reajuste anual pelo IPCA..."></textarea>
+          </div>
+
+          <div class="field">
+            <label>Tom de redação</label>
+            <div class="chips" id="tone-chips">
+              <span class="chip active" data-tone="Formal jurídico">Formal jurídico</span>
+              <span class="chip" data-tone="Claro e acessível">Claro e simples</span>
+              <span class="chip" data-tone="Detalhado e protetivo">Detalhado</span>
+            </div>
+          </div>
+
+          <div class="field">
+            <label>Tema visual do documento</label>
+            <div class="chips" id="theme-chips">
+              <span class="chip active" data-theme="cartorio">Cartório</span>
+              <span class="chip" data-theme="clean">Clean</span>
+              <span class="chip" data-theme="executivo">Executivo</span>
+            </div>
+          </div>
+
+          <div class="field">
+            <label for="model-select">Modelo de IA</label>
+            <select id="model-select"></select>
+            <p class="field-hint">Roteado via OpenRouter — uma chave acessa todos.</p>
+          </div>
+
+          <div class="spec-actions">
+            <button id="generate-btn" class="btn-primary">Gerar contrato</button>
+            <p class="gen-note" id="gen-note">A IA roda na sua chave (BYOK)</p>
+          </div>
+        </section>
+
+        <!-- ============ DOCUMENT STAGE (output) ============ -->
+        <section class="stage-panel">
+          <div class="stage-tabs">
+            <button class="tab active" data-tab="preview" id="tab-preview">Prévia</button>
+            <button class="tab" data-tab="clauses" id="tab-clauses" disabled="">Cláusulas</button>
+            <button class="tab" data-tab="html" id="tab-html" disabled="">HTML</button>
+          </div>
+
+          <div class="doc-frame" id="doc-frame">
+            <span class="frame-corner fc-tl"></span>
+            <span class="frame-corner fc-tr"></span>
+            <span class="frame-corner fc-bl"></span>
+            <span class="frame-corner fc-br"></span>
+            <span class="minuta-stamp" id="minuta-stamp">Minuta</span>
+
+            <!-- PREVIEW TAB -->
+            <div class="tab-pane" id="pane-preview">
+              <div class="doc-empty" id="doc-empty">
+                <div>
+                  <div class="seal-mark" aria-hidden="true">
+                    <svg viewBox="0 0 100 100" fill="none">
+                      <circle cx="50" cy="50" r="44" stroke="#9a7b3f" stroke-width="1.5"></circle>
+                      <circle cx="50" cy="50" r="38" stroke="#8a2b2b" stroke-width="2.5"></circle>
+                      <circle cx="50" cy="50" r="24" stroke="#9a7b3f" stroke-width="1"></circle>
+                      <path d="M38 46l8 8 16-16" stroke="#1b2b3a" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"></path>
+                    </svg>
+                  </div>
+                  <h3>Seu contrato aparece aqui</h3>
+                  <p>Preencha a minuta ao lado e clique em <strong>Gerar contrato</strong>. A IA monta um documento completo, com cláusulas numeradas e campos de assinatura — pronto para exportar em PDF.</p>
+                </div>
+              </div>
+              <iframe id="doc-preview" title="Prévia do contrato" style="display:none;"></iframe>
+            </div>
+
+            <!-- CLAUSES TAB -->
+            <div class="tab-pane" id="pane-clauses" style="display:none;">
+              <ul class="outline-list" id="clauses-outline"></ul>
+            </div>
+
+            <!-- HTML TAB -->
+            <div class="tab-pane" id="pane-html" style="display:none;">
+              <textarea id="doc-html" readonly="" spellcheck="false"></textarea>
+            </div>
+          </div>
+
+          <div class="export-bar">
+            <button class="btn-primary" id="export-pdf" disabled="">Baixar PDF</button>
+            <button class="btn-secondary" id="export-html" disabled="">Baixar HTML</button>
+            <button class="btn-secondary" id="copy-html" disabled="">Copiar HTML</button>
+            <span class="export-spacer"></span>
+            <span class="doc-meta" id="doc-meta"></span>
+          </div>
+        </section>
+      </div>
+    </main>
+
+    <footer class="app-footer">
+      <p>Feito com carinho para a comunidade <strong>Gênesis IA</strong></p>
+      <p class="footer-links">
+        <a href="/privacy-policy" rel="noopener noreferrer" target="_blank">Política de Privacidade</a>
+        <span class="footer-sep">·</span>
+        <a href="/data-deletion" rel="noopener noreferrer" target="_blank">Solicitar Exclusão de Dados</a>
+      </p>
+      <p style="margin-top:8px;font-size:11.5px;color:var(--ink-faint)">Os contratos gerados são um ponto de partida. Para negócios de alto valor ou dúvidas jurídicas, revise com um advogado.</p>
+    </footer>
+  </div>
+
+  <!-- API Key Manager Modal -->
+  <div id="key-modal" class="modal" style="display:none;">
+    <div class="modal-overlay"></div>
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3>Gerenciar Chaves de API</h3>
+        <button id="modal-close" class="btn-icon" aria-label="Fechar">×</button>
+      </div>
+      <div id="modal-key-inputs" class="key-inputs"></div>
+      <div class="modal-actions">
+        <button id="modal-save" class="btn-primary">Salvar</button>
+        <button id="modal-clear" class="btn-danger">Limpar todas as chaves</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="toast" id="toast"></div>
+
+  <script src="js/config.js"></script>
+  <script src="js/kill-switch.js"></script>
+  <script src="js/rate-limiter.js"></script>
+  <script src="js/membership-gate.js"></script>
+  <script src="js/api-key-manager.js"></script>
+  <script src="js/feedback-widget.js"></script>
+  <script src="js/app.js"></script>
+
+
+</body></html>

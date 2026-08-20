@@ -1,0 +1,303 @@
+<!DOCTYPE html><html lang="pt-BR"><head>
+  <script>/* gate-bootstrap: capture an early login submit before the remote gate wires up, so the first click is never lost */
+  (function(){function h(e){var f=e.target;if(f&&f.id==='gate-form'&&!window.MembershipGate){e.preventDefault();e.stopImmediatePropagation();window.__gateEarlySubmit=true;}}window.addEventListener('submit',h,true);window.__gateBootstrapDisarm=function(){window.removeEventListener('submit',h,true);};})();</script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Fechamento IA — Gênesis IA</title>
+  <meta name="description" content="Kit de conversas de venda para WhatsApp e DM com IA — roteiros prontos de abertura, quebra de objeções e fechamento. Chave própria (BYOK).">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%2314211c'/%3E%3Cpath d='M9 12h9a5 5 0 1 1-1.2 9.9L13 23l.6-3.2A5 5 0 0 1 9 15z' fill='none' stroke='%23ff7a3d' stroke-width='2'/%3E%3Ccircle cx='22' cy='11' r='2.4' fill='%2337d9b0'/%3E%3C/svg%3E">
+  <link rel="stylesheet" href="css/styles.css">
+  <link rel="preconnect" href="https://gate.appsbrasil.store">
+  <link rel="preload" href="https://gate.appsbrasil.store/v1/membership-gate.js" as="script">
+</head>
+<body>
+  <div class="bg-gradient"></div>
+
+  <!-- ============================ MEMBERSHIP GATE ============================ -->
+  <div id="gate-screen" class="screen active">
+    <div class="gate-container">
+      <div class="gate-header">
+        <div class="gate-glyph" aria-hidden="true">
+          <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M3 11a5 5 0 0 1 5-5h9.5a2.5 2.5 0 0 1 0 5H13a5 5 0 0 1-5 5 5 5 0 0 1-5-5z"></path>
+            <path d="M8 11v.01"></path>
+            <path d="M19.5 6.5l2-2"></path>
+          </svg>
+        </div>
+        <h1 class="gradient-text">Fechamento <span class="hl">IA</span></h1>
+        <p class="subtitle">Kit de conversas de venda para WhatsApp e DM: roteiros prontos de abertura, quebra de objeções e fechamento — renderizados como conversa real.</p>
+        <p class="community-badge">Exclusivo para membros da Comunidade Gênesis IA</p>
+      </div>
+
+      <form id="gate-form" class="gate-form">
+        <div class="form-group">
+          <label for="gate-email">Seu e-mail cadastrado</label>
+          <input type="email" id="gate-email" placeholder="seu@email.com" autocomplete="email">
+        </div>
+        <div class="form-group">
+          <label for="gate-phone">Seu WhatsApp (com DDD)</label>
+          <input type="tel" id="gate-phone" placeholder="11999999999" autocomplete="tel">
+        </div>
+        <button type="submit" id="gate-submit" class="btn-primary">
+          <span class="btn-text">Entrar em campo</span>
+          <span class="btn-loading" style="display:none;">Verificando...</span>
+        </button>
+        <p id="gate-error" class="error-message" style="display:none;"></p>
+      </form>
+
+      <p class="gate-footer">Ainda não é membro? <a href="https://comunidade-genesisia.appsbrasil.store" target="_blank" rel="noopener noreferrer">Conheça a Comunidade Gênesis IA</a></p>
+    </div>
+  </div>
+
+  <!-- ============================ API KEY SETUP ============================ -->
+  <div id="key-screen" class="screen">
+    <div class="key-container">
+      <h2>Configure sua chave de IA</h2>
+      <p class="subtitle">Suas chaves ficam salvas apenas no seu navegador. Nunca são enviadas para nossos servidores.</p>
+
+      <div id="key-inputs" class="key-inputs"></div>
+
+      <div class="key-model-row">
+        <label for="key-model-select">Modelo de IA</label>
+        <select id="key-model-select"></select>
+        <p class="field hint" style="margin-top:6px">Dica: com uma chave OpenRouter, um único acesso alcança Claude, GPT, Gemini, DeepSeek e mais.</p>
+      </div>
+
+      <div class="key-actions">
+        <button id="key-continue" class="btn-primary" disabled="">Continuar para a ferramenta</button>
+        <button id="key-skip" class="btn-secondary">Pular por enquanto</button>
+      </div>
+
+      <details class="key-info">
+        <summary>Como consigo uma chave de API?</summary>
+        <div class="key-info-content">
+          <p><strong>OpenRouter (recomendado):</strong> <code>openrouter.ai/keys</code> — uma chave para todos os modelos.</p>
+          <p><strong>OpenAI:</strong> <code>platform.openai.com/api-keys</code></p>
+          <p><strong>Google (Gemini):</strong> <code>aistudio.google.com/apikey</code></p>
+        </div>
+      </details>
+    </div>
+  </div>
+
+  <!-- ============================ MAIN APP ============================ -->
+  <div id="app-screen" class="screen">
+    <header class="app-header">
+      <div class="header-left">
+        <div class="header-badge" aria-hidden="true">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M3 11a5 5 0 0 1 5-5h9.5a2.5 2.5 0 0 1 0 5H13a5 5 0 0 1-5 5 5 5 0 0 1-5-5z"></path><path d="M8 11v.01"></path><path d="M19.5 6.5l2-2"></path>
+          </svg>
+        </div>
+        <h1 class="app-title">Fechamento <span class="hl">IA</span></h1>
+      </div>
+      <div class="header-right">
+        <a aria-label="Sobre" class="btn-icon" href="/about" title="Sobre esta ferramenta">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+        </a>
+        <button id="manage-keys-btn" class="btn-icon" title="Gerenciar chaves de API" aria-label="Chaves de API">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 1 1-7.778 7.778 5.5 5.5 0 0 1 7.777-7.777zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3m-3.5 3.5L19 4"></path></svg>
+        </button>
+        <button id="logout-btn" class="btn-icon" title="Sair" aria-label="Sair">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg>
+        </button>
+      </div>
+    </header>
+
+    <main class="app-main">
+      <div class="studio">
+        <!-- ---------- BRIEF ---------- -->
+        <section class="brief" aria-label="Escalação da conversa">
+          <h2 class="brief-title"><span class="dot"></span> Escalação</h2>
+          <p class="brief-sub">Monte o playbook de fechamento da sua conversa de venda.</p>
+
+          <div class="field">
+            <label for="in-produto">Produto / oferta</label>
+            <textarea id="in-produto" placeholder="Ex.: Mentoria de 8 semanas de tráfego pago para donos de e-commerce. Promessa: escalar o faturamento com anúncios lucrativos. Bônus: comunidade + templates."></textarea>
+          </div>
+
+          <div class="field">
+            <label for="in-publico">Público-alvo</label>
+            <input type="text" id="in-publico" placeholder="Ex.: donos de loja virtual travados no faturamento">
+          </div>
+
+          <div class="field">
+            <label for="in-ticket">Ticket / preço</label>
+            <input type="text" id="in-ticket" placeholder="Ex.: R$ 1.997 ou 12x R$ 197">
+            <p class="hint">Ajuda a IA a construir a quebra de objeção de preço.</p>
+          </div>
+
+          <div class="field">
+            <label>Canal</label>
+            <div class="chips" id="chips-canal">
+              <button type="button" class="chip active" data-val="whatsapp">WhatsApp</button>
+              <button type="button" class="chip" data-val="instagram">Instagram DM</button>
+            </div>
+          </div>
+
+          <div class="field">
+            <label>Tom da conversa</label>
+            <div class="chips" id="chips-tom">
+              <button type="button" class="chip active" data-val="Consultivo e próximo">Consultivo</button>
+              <button type="button" class="chip" data-val="Direto e enérgico">Direto</button>
+              <button type="button" class="chip" data-val="Leve e amigável">Leve</button>
+              <button type="button" class="chip" data-val="Premium e sofisticado">Premium</button>
+            </div>
+          </div>
+
+          <div class="field">
+            <label for="in-vendedor">Seu nome / marca (opcional)</label>
+            <input type="text" id="in-vendedor" placeholder="Ex.: Time da Loja X">
+          </div>
+
+          <div class="field">
+            <label for="in-objecoes">Objeções específicas (opcional)</label>
+            <input type="text" id="in-objecoes" placeholder="Ex.: 'já tentei tráfego e não deu certo'">
+            <p class="hint">Além das objeções comuns, adicione as suas.</p>
+          </div>
+
+          <div class="field model-inline">
+            <label for="model-select" style="margin:0">Modelo</label>
+            <select id="model-select" aria-label="Modelo de IA"></select>
+          </div>
+
+          <button id="generate-btn" class="btn-primary">Montar playbook</button>
+        </section>
+
+        <!-- ---------- STAGE ---------- -->
+        <section class="stage" aria-label="Playbook">
+          <div class="stage-tabs" role="tablist">
+            <button class="tab active" data-tab="playbook" role="tab">Playbook</button>
+            <button class="tab" data-tab="export" role="tab">Exportar</button>
+          </div>
+
+          <div class="stage-body">
+            <!-- PLAYBOOK TAB -->
+            <div id="tab-playbook" class="tab-panel active">
+              <div id="pb-empty" class="state-empty">
+                <div class="glyph" aria-hidden="true">
+                  <svg width="52" height="52" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16v16H4z" opacity=".4"></path><path d="M8 8l3 3-3 3"></path><path d="M13 15h4"></path></svg>
+                </div>
+                <h3>Seu playbook aparece aqui</h3>
+                <p>Preencha a escalação ao lado e clique em <strong>Montar playbook</strong>. A IA desenha cada jogada da conversa — abertura, qualificação, oferta, quebra de objeções, fechamento e follow-up — como uma conversa real de WhatsApp.</p>
+                <div class="chalk-route-demo" aria-hidden="true">
+                  <svg viewBox="0 0 340 60" width="100%" fill="none">
+                    <circle cx="24" cy="30" r="12" stroke="#37d9b0" stroke-width="2"></circle>
+                    <path d="M40 30 H150" stroke="#ff7a3d" stroke-width="2" stroke-dasharray="4 5"></path>
+                    <circle cx="170" cy="30" r="12" stroke="#37d9b0" stroke-width="2"></circle>
+                    <path d="M186 30 H300" stroke="#ff7a3d" stroke-width="2" stroke-dasharray="4 5"></path>
+                    <circle cx="316" cy="30" r="14" stroke="#ff7a3d" stroke-width="2.5"></circle>
+                    <path d="M311 30l3.5 3.5L322 26" stroke="#ff7a3d" stroke-width="2"></path>
+                  </svg>
+                </div>
+              </div>
+
+              <div id="pb-loading" class="state-loading" style="display:none;">
+                <div class="spinner"></div>
+                <div class="lt" id="loading-title">Desenhando as jogadas…</div>
+                <div class="ls">Montando o roteiro de fechamento da sua conversa.</div>
+              </div>
+
+              <div id="pb-content" style="display:none;">
+                <div class="summary-bar" id="pb-summary"></div>
+                <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-bottom:14px;">
+                  <span class="tac-label">Biblioteca de jogadas</span>
+                  <div class="chan-toggle" id="chan-toggle" role="group" aria-label="Canal de visualização">
+                    <button class="seg active" data-chan="whatsapp" type="button">WhatsApp</button>
+                    <button class="seg" data-chan="instagram" type="button">Instagram</button>
+                  </div>
+                </div>
+                <div class="playbook">
+                  <div class="rail" id="pb-rail" role="tablist" aria-label="Cenários"></div>
+                  <div id="pb-stage"></div>
+                </div>
+              </div>
+            </div>
+
+            <!-- EXPORT TAB -->
+            <div id="tab-export" class="tab-panel">
+              <div id="ex-empty" class="state-empty">
+                <div class="glyph" aria-hidden="true">
+                  <svg width="52" height="52" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+                </div>
+                <h3>Exportação</h3>
+                <p>Gere um playbook primeiro. Depois você poderá copiar tudo, baixar como página <strong>.html</strong> ou como <strong>.txt</strong> pronto para colar.</p>
+              </div>
+              <div id="ex-content" style="display:none;">
+                <div class="summary-bar" id="ex-summary"></div>
+                <div class="export-grid">
+                  <div class="export-card">
+                    <div class="glyph" aria-hidden="true"><svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg></div>
+                    <h4>Copiar tudo</h4>
+                    <p>Playbook completo como texto, pronto para colar.</p>
+                    <button id="btn-copy-all" class="btn-secondary">Copiar playbook</button>
+                  </div>
+                  <div class="export-card">
+                    <div class="glyph" aria-hidden="true"><svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline></svg></div>
+                    <h4>Baixar .html</h4>
+                    <p>Página autocontida com as conversas estilizadas.</p>
+                    <button id="btn-download-html" class="btn-secondary">Baixar HTML</button>
+                  </div>
+                  <div class="export-card">
+                    <div class="glyph" aria-hidden="true"><svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="8" y1="13" x2="16" y2="13"></line><line x1="8" y1="17" x2="16" y2="17"></line></svg></div>
+                    <h4>Baixar .txt</h4>
+                    <p>Roteiro puro, cenário a cenário, mensagem a mensagem.</p>
+                    <button id="btn-download-txt" class="btn-secondary">Baixar TXT</button>
+                  </div>
+                  <div class="export-card">
+                    <div class="glyph" aria-hidden="true"><svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M8 12h8M8 8h8M8 16h5"></path><rect x="3" y="3" width="18" height="18" rx="2"></rect></svg></div>
+                    <h4>Copiar cenário atual</h4>
+                    <p>Só as mensagens da jogada aberta no playbook.</p>
+                    <button id="btn-copy-scenario" class="btn-secondary">Copiar cenário</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+      </div>
+    </main>
+
+    <footer class="app-footer">
+      <p>Feito com estratégia para a comunidade <strong>Gênesis IA</strong></p>
+      <p class="footer-links">
+        <a href="/about">Sobre</a>
+        <span class="footer-sep">·</span>
+        <a href="/privacy-policy" rel="noopener noreferrer" target="_blank">Política de Privacidade</a>
+        <span class="footer-sep">·</span>
+        <a href="/data-deletion" rel="noopener noreferrer" target="_blank">Excluir meus dados</a>
+      </p>
+    </footer>
+  </div>
+
+  <!-- API Key Manager Modal -->
+  <div id="key-modal" class="modal" style="display:none;">
+    <div class="modal-overlay"></div>
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3>Chaves de API</h3>
+        <button id="modal-close" class="btn-icon" aria-label="Fechar">×</button>
+      </div>
+      <div id="modal-key-inputs" class="key-inputs"></div>
+      <div class="modal-model-row">
+        <label for="model-select-modal">Modelo de IA</label>
+        <select id="model-select-modal"></select>
+      </div>
+      <div class="modal-actions">
+        <button id="modal-save" class="btn-primary">Salvar</button>
+        <button id="modal-clear" class="btn-danger">Limpar chaves</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="toast" class="toast" role="status" aria-live="polite"></div>
+
+  <script src="js/config.js"></script>
+  <script src="js/kill-switch.js"></script>
+  <script src="js/rate-limiter.js"></script>
+  <script src="js/membership-gate.js"></script>
+  <script src="js/api-key-manager.js"></script>
+  <script src="js/feedback-widget.js"></script>
+  <script src="js/app.js"></script>
+
+
+</body></html>

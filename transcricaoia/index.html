@@ -1,0 +1,259 @@
+<!DOCTYPE html><html lang="pt-BR"><head>
+  <script>/* gate-bootstrap: capture an early login submit before the remote gate wires up, so the first click is never lost */
+  (function(){function h(e){var f=e.target;if(f&&f.id==='gate-form'&&!window.MembershipGate){e.preventDefault();e.stopImmediatePropagation();window.__gateEarlySubmit=true;}}window.addEventListener('submit',h,true);window.__gateBootstrapDisarm=function(){window.removeEventListener('submit',h,true);};})();</script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Transcrição IA — Gênesis IA</title>
+  <link rel="stylesheet" href="css/styles.css">
+  <link rel="preconnect" href="https://gate.appsbrasil.store">
+  <link rel="preload" href="https://gate.appsbrasil.store/v1/membership-gate.js" as="script">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%2314151a'/%3E%3Crect x='5' y='11' width='22' height='10' rx='3' fill='%230b0b0d' stroke='%233355ff' stroke-width='1.5'/%3E%3Crect x='8' y='15' width='9' height='2' rx='1' fill='%23ffffff'/%3E%3Crect x='19' y='15' width='5' height='2' rx='1' fill='%23f5c518'/%3E%3C/svg%3E">
+</head>
+<body>
+  <div class="cue-backdrop" aria-hidden="true"></div>
+
+  <!-- ============================ MEMBERSHIP GATE ============================ -->
+  <div id="gate-screen" class="screen active">
+    <div class="gate-container">
+      <div class="gate-brandmark" aria-hidden="true">
+        <svg width="52" height="52" viewBox="0 0 48 48" fill="none">
+          <rect x="4" y="16" width="40" height="18" rx="5" fill="#0b0b0d" stroke="#3355ff" stroke-width="2"></rect>
+          <rect x="9" y="23" width="16" height="3" rx="1.5" fill="#ffffff"></rect>
+          <rect x="27" y="23" width="9" height="3" rx="1.5" fill="#f5c518"></rect>
+        </svg>
+      </div>
+      <div class="gate-header">
+        <h1 class="gate-title">Transcrição IA</h1>
+        <p class="subtitle">Transcreva áudio e vídeo e gere legendas <span class="mono">.SRT</span> / <span class="mono">.VTT</span> prontas para publicar.</p>
+        <p class="community-badge">Exclusivo para membros da Comunidade Gênesis IA</p>
+      </div>
+
+      <form id="gate-form" class="gate-form">
+        <div class="form-group">
+          <label for="gate-email">Seu e-mail cadastrado</label>
+          <input type="email" id="gate-email" placeholder="seu@email.com" autocomplete="email">
+        </div>
+        <div class="form-group">
+          <label for="gate-phone">Seu WhatsApp (com DDD)</label>
+          <input type="tel" id="gate-phone" placeholder="11999999999" autocomplete="tel">
+        </div>
+        <button type="submit" id="gate-submit" class="btn-primary">
+          <span class="btn-text">Verificar acesso</span>
+          <span class="btn-loading" style="display:none;">Verificando…</span>
+        </button>
+        <p id="gate-error" class="error-message" style="display:none;"></p>
+      </form>
+
+      <p class="gate-footer">Ainda não é membro? <a href="https://comunidade-genesisia.appsbrasil.store" target="_blank" rel="noopener noreferrer">Conheça a Comunidade Gênesis IA</a></p>
+    </div>
+  </div>
+
+  <!-- ============================ API KEY SETUP ============================ -->
+  <div id="key-screen" class="screen">
+    <div class="key-container">
+      <h2>Configure sua chave de IA</h2>
+      <p class="subtitle">Suas chaves ficam salvas apenas no seu navegador. Nunca são enviadas para nossos servidores — a transcrição roda direto na sua conta OpenAI.</p>
+
+      <div id="key-inputs" class="key-inputs">
+        <!-- Dynamically populated by api-key-manager.js -->
+      </div>
+
+      <div class="key-actions">
+        <button id="key-continue" class="btn-primary" disabled="">Continuar para a ferramenta</button>
+        <button id="key-skip" class="btn-secondary">Pular por enquanto</button>
+      </div>
+
+      <details class="key-info">
+        <summary>Como consigo uma chave de API?</summary>
+        <div class="key-info-content">
+          <p><strong>OpenAI</strong> (obrigatória — transcreve o áudio com o Whisper): acesse <code>platform.openai.com/api-keys</code> e crie uma chave. É a mesma chave usada para a tradução/limpeza.</p>
+          <p><strong>OpenRouter</strong> (opcional — desbloqueia Claude, Gemini, DeepSeek e mais para traduzir/limpar): acesse <code>openrouter.ai/keys</code>.</p>
+        </div>
+      </details>
+    </div>
+  </div>
+
+  <!-- ============================ MAIN APP ============================ -->
+  <div id="app-screen" class="screen">
+    <header class="app-header">
+      <div class="header-left">
+        <span class="app-glyph" aria-hidden="true">
+          <svg width="26" height="26" viewBox="0 0 48 48" fill="none">
+            <rect x="4" y="16" width="40" height="18" rx="5" fill="#0b0b0d" stroke="#3355ff" stroke-width="2"></rect>
+            <rect x="9" y="23" width="16" height="3" rx="1.5" fill="#ffffff"></rect>
+            <rect x="27" y="23" width="9" height="3" rx="1.5" fill="#f5c518"></rect>
+          </svg>
+        </span>
+        <div class="header-titles">
+          <h1 class="app-title">Transcrição IA</h1>
+          <p class="app-kicker">Áudio / vídeo → legendas <span class="mono">.SRT · .VTT</span> + transcrição</p>
+        </div>
+      </div>
+      <div class="header-right">
+        <a aria-label="Sobre" class="btn-icon" href="/about" title="Sobre esta ferramenta">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+        </a>
+        <button id="manage-keys-btn" class="btn-icon" title="Gerenciar chaves de API" aria-label="Chaves">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 1 1-7.778 7.778 5.5 5.5 0 0 1 7.777-7.777zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3m-3.5 3.5L19 4"></path></svg>
+        </button>
+        <button id="logout-btn" class="btn-icon" title="Sair" aria-label="Sair">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg>
+        </button>
+      </div>
+    </header>
+
+    <main class="app-main">
+      <div class="studio">
+        <!-- ===== LEFT: compose ===== -->
+        <section class="panel compose">
+          <div class="panel-head">
+            <span class="panel-tab">01</span>
+            <h2>Enviar mídia</h2>
+          </div>
+
+          <div id="dropzone" class="dropzone" tabindex="0" role="button" aria-label="Escolher arquivo de áudio ou vídeo">
+            <input type="file" id="file-input" accept="audio/*,video/*,.mp3,.mp4,.m4a,.wav,.webm,.mpeg,.mpga,.ogg" hidden="">
+            <div class="dz-idle">
+              <svg class="dz-ico" width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
+              <p class="dz-title">Arraste um áudio ou vídeo aqui</p>
+              <p class="dz-sub">ou <span class="dz-link">clique para escolher</span> — mp3, mp4, m4a, wav, webm…</p>
+              <p class="dz-limit mono">limite 25 MB · Whisper (OpenAI)</p>
+            </div>
+            <div class="dz-file" hidden="">
+              <div class="dzf-ico" aria-hidden="true">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18V5l12-2v13"></path><circle cx="6" cy="18" r="3"></circle><circle cx="18" cy="16" r="3"></circle></svg>
+              </div>
+              <div class="dzf-meta">
+                <p class="dzf-name" id="file-name">arquivo</p>
+                <p class="dzf-size mono" id="file-size">—</p>
+              </div>
+              <button type="button" class="dzf-remove" id="file-remove" title="Remover" aria-label="Remover arquivo">×</button>
+            </div>
+          </div>
+
+          <div class="field">
+            <label for="in-language">Idioma do áudio</label>
+            <select id="in-language" class="input">
+              <option value="">Detectar automaticamente</option>
+              <option value="pt">Português</option>
+              <option value="en">Inglês</option>
+              <option value="es">Espanhol</option>
+              <option value="fr">Francês</option>
+              <option value="it">Italiano</option>
+              <option value="de">Alemão</option>
+              <option value="ja">Japonês</option>
+              <option value="zh">Chinês</option>
+            </select>
+            <p class="field-hint">Informar o idioma melhora a precisão. Deixe em automático se não tiver certeza.</p>
+          </div>
+
+          <div class="field">
+            <label for="in-hint">Termos e nomes próprios <span class="opt">(opcional)</span></label>
+            <textarea id="in-hint" class="input" rows="2" placeholder="Ex.: Gênesis IA, Arthur, ChatGPT, remarketing, LTV…"></textarea>
+            <p class="field-hint">Ajuda o modelo a grafar nomes de marca, siglas e jargões corretamente.</p>
+          </div>
+
+          <button id="btn-transcribe" class="btn-primary btn-block">
+            <span class="btn-text">Transcrever</span>
+            <span class="btn-loading" style="display:none;">Transcrevendo…</span>
+          </button>
+          <p id="gen-hint" class="gen-hint">A transcrição roda na sua chave OpenAI (Whisper). O arquivo vai direto para a OpenAI — nunca passa pelos nossos servidores.</p>
+
+          <!-- refine controls appear after a transcription exists -->
+          <div id="refine" class="refine" hidden="">
+            <div class="refine-head">
+              <span class="panel-tab">02</span>
+              <h3>Refinar com IA <span class="opt">(opcional)</span></h3>
+            </div>
+            <div class="field">
+              <label for="model-select">Modelo de IA (tradução / limpeza)</label>
+              <select id="model-select" class="input"></select>
+              <p class="field-hint">Padrão usa sua chave OpenAI. Modelos de outros provedores exigem uma chave OpenRouter.</p>
+            </div>
+            <div class="field">
+              <label for="in-target-lang">Traduzir legendas para</label>
+              <div class="inline-row">
+                <select id="in-target-lang" class="input">
+                  <option value="Inglês">Inglês</option>
+                  <option value="Espanhol">Espanhol</option>
+                  <option value="Português">Português</option>
+                  <option value="Francês">Francês</option>
+                  <option value="Italiano">Italiano</option>
+                  <option value="Alemão">Alemão</option>
+                </select>
+                <button id="btn-translate" class="btn-secondary">Traduzir</button>
+              </div>
+              <p class="field-hint">Gera uma nova faixa de legendas mantendo o tempo de cada fala.</p>
+            </div>
+            <button id="btn-clean" class="btn-ghost btn-block">Gerar transcrição limpa (para blog / show-notes)</button>
+          </div>
+        </section>
+
+        <!-- ===== RIGHT: stage ===== -->
+        <section class="panel stage">
+          <div id="results" class="results">
+            <div class="state empty">
+              <div class="cue-preview" aria-hidden="true">
+                <div class="cue-screen">
+                  <span class="cue-rec"><span class="dot"></span>PREVIEW</span>
+                  <div class="cue-bar"><span class="cue-word">as suas</span> <span class="cue-word hi">legendas</span> <span class="cue-word">aparecem aqui</span></div>
+                </div>
+                <div class="cue-stub"><span class="mono">00:00:00,000 → 00:00:02,400</span></div>
+              </div>
+              <h3>Suas legendas aparecem aqui</h3>
+              <p>Envie um áudio ou vídeo à esquerda e clique <strong>Transcrever</strong>. Em segundos você tem os blocos de legenda com marcação de tempo, prontos para editar e exportar em <span class="mono">.SRT</span>, <span class="mono">.VTT</span> ou texto.</p>
+              <div class="empty-steps">
+                <span><b>1</b> Envie a mídia</span>
+                <span><b>2</b> Transcreva</span>
+                <span><b>3</b> Edite & exporte</span>
+              </div>
+            </div>
+          </div>
+        </section>
+      </div>
+    </main>
+
+    <footer class="app-footer">
+      <p>Feito com carinho para a comunidade <strong>Gênesis IA</strong></p>
+      <p class="footer-links">
+        <a href="/about">Sobre</a>
+        <span class="footer-sep">·</span>
+        <a href="/privacy-policy" rel="noopener noreferrer" target="_blank">Política de Privacidade</a>
+        <span class="footer-sep">·</span>
+        <a href="/data-deletion" rel="noopener noreferrer" target="_blank">Solicitar Exclusão de Dados</a>
+      </p>
+    </footer>
+  </div>
+
+  <!-- ============================ Key Manager Modal ============================ -->
+  <div id="key-modal" class="modal" style="display:none;">
+    <div class="modal-overlay"></div>
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3>Gerenciar Chaves de API</h3>
+        <button id="modal-close" class="btn-icon" aria-label="Fechar">×</button>
+      </div>
+      <div id="modal-key-inputs" class="key-inputs"></div>
+      <div class="field modal-model-field">
+        <label for="model-select-modal">Modelo de IA (tradução / limpeza)</label>
+        <select id="model-select-modal" class="input"></select>
+      </div>
+      <div class="modal-actions">
+        <button id="modal-save" class="btn-primary">Salvar</button>
+        <button id="modal-clear" class="btn-danger">Limpar todas as chaves</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="toast" class="toast" role="status" aria-live="polite"></div>
+
+  <script src="js/config.js"></script>
+  <script src="js/kill-switch.js"></script>
+  <script src="js/rate-limiter.js"></script>
+  <script src="js/membership-gate.js"></script>
+  <script src="js/api-key-manager.js"></script>
+  <script src="js/feedback-widget.js"></script>
+  <script src="js/app.js"></script>
+
+
+</body></html>

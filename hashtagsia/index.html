@@ -1,0 +1,233 @@
+<!DOCTYPE html><html lang="pt-BR"><head>
+  <script>/* gate-bootstrap: capture an early login submit before the remote gate wires up, so the first click is never lost */
+  (function(){function h(e){var f=e.target;if(f&&f.id==='gate-form'&&!window.MembershipGate){e.preventDefault();e.stopImmediatePropagation();window.__gateEarlySubmit=true;}}window.addEventListener('submit',h,true);window.__gateBootstrapDisarm=function(){window.removeEventListener('submit',h,true);};})();</script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Hashtags IA — Gênesis IA</title>
+  <meta name="description" content="Estratégia de hashtags com IA para suas redes sociais — agrupadas por alcance. Ferramenta da Comunidade Gênesis IA.">
+  <link rel="stylesheet" href="css/styles.css">
+  <link rel="preconnect" href="https://gate.appsbrasil.store">
+  <link rel="preload" href="https://gate.appsbrasil.store/v1/membership-gate.js" as="script">
+</head>
+<body>
+
+  <!-- ============ MEMBERSHIP GATE ============ -->
+  <div id="gate-screen" class="screen active">
+    <div class="center-screen">
+      <div class="card">
+        <div style="text-align:center; margin-bottom:8px;">
+          <div class="brand-mark">#</div>
+        </div>
+        <h1 style="text-align:center;">Hashtags IA</h1>
+        <p class="muted" style="text-align:center; margin:10px 0 16px;">Estratégia de hashtags com IA para suas redes sociais</p>
+        <div style="text-align:center;">
+          <span class="gate-badge">Exclusivo para membros da Comunidade Gênesis IA</span>
+        </div>
+
+        <form id="gate-form">
+          <div class="field">
+            <label for="gate-email">Seu e-mail cadastrado</label>
+            <input type="email" id="gate-email" placeholder="seu@email.com" autocomplete="email">
+          </div>
+          <div class="field">
+            <label for="gate-phone">Seu WhatsApp (com DDD)</label>
+            <input type="tel" id="gate-phone" placeholder="11999999999" autocomplete="tel">
+          </div>
+          <button type="submit" id="gate-submit" class="btn btn-magenta">
+            <span class="btn-text">Verificar acesso</span>
+            <span class="btn-loading" style="display:none;">Verificando...</span>
+          </button>
+          <p id="gate-error" class="gate-msg error" style="display:none;"></p>
+        </form>
+
+        <p class="muted" style="text-align:center; font-size:13px; margin-top:20px;">
+          Ainda não é membro?<br>
+          <a class="community-link" href="https://comunidade-genesisia.appsbrasil.store" target="_blank" rel="noopener noreferrer">Conheça a Comunidade Gênesis IA</a>
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ API KEY SETUP ============ -->
+  <div id="key-screen" class="screen">
+    <div class="center-screen">
+      <div class="card card-lg">
+        <span class="eyebrow">Passo único</span>
+        <h2 style="margin-top:14px;">Configure sua chave de IA</h2>
+        <p class="muted" style="margin:10px 0 18px;">Sua chave fica salva apenas no seu navegador. Nunca é enviada para nossos servidores.</p>
+
+        <div id="key-inputs"></div>
+
+        <div style="display:flex; gap:10px; flex-wrap:wrap; margin-top:8px;">
+          <button id="key-continue" class="btn btn-cobalt" disabled="">Continuar para a ferramenta</button>
+          <button id="key-skip" class="btn btn-ghost btn-sm">Pular por enquanto</button>
+        </div>
+
+        <details style="margin-top:20px;">
+          <summary style="cursor:pointer; font-weight:700;">Como consigo uma chave de API?</summary>
+          <div style="margin-top:10px; font-size:14px;" class="muted">
+            <p><strong>OpenAI:</strong> Acesse <code>platform.openai.com/api-keys</code> e crie uma nova chave.</p>
+            <p><strong>OpenRouter:</strong> Acesse <code>openrouter.ai/keys</code> — uma única chave acessa vários modelos.</p>
+          </div>
+        </details>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ MAIN APP ============ -->
+  <div id="app-screen" class="screen">
+    <div class="wrap">
+      <header class="app-header">
+        <div class="app-title">
+          <span class="hash">#</span>
+          <div>
+            <h2 style="margin:0; line-height:1;">Hashtags IA</h2>
+            <span class="muted" style="font-size:12px;">Olá, <span id="user-name">Maestro</span></span>
+          </div>
+        </div>
+        <div class="header-actions">
+          <a aria-label="Sobre" class="btn btn-ghost btn-sm" href="/about" title="Sobre esta ferramenta">? Sobre</a>
+          <button id="manage-keys-btn" class="btn btn-ghost btn-sm" title="Gerenciar chaves de API">Chaves</button>
+          <button id="logout-btn" class="btn btn-ghost btn-sm" title="Sair">Sair</button>
+        </div>
+      </header>
+
+      <!-- Generator form -->
+      <section class="gen-card">
+        <div class="field">
+          <label for="topic">Tema / nicho do post</label>
+          <input type="text" id="topic" placeholder="Ex.: marketing digital para pequenos negócios" maxlength="160">
+        </div>
+
+        <div class="row">
+          <div class="field">
+            <label for="platform">Plataforma</label>
+            <select id="platform">
+              <option value="Instagram">Instagram</option>
+              <option value="TikTok">TikTok</option>
+              <option value="YouTube">YouTube Shorts</option>
+              <option value="LinkedIn">LinkedIn</option>
+              <option value="X">X / Twitter</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="language">Idioma das hashtags</label>
+            <select id="language">
+              <option value="Português">Português</option>
+              <option value="Inglês">Inglês</option>
+              <option value="Português + Inglês">Português + Inglês</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="field">
+          <label>Objetivo do post</label>
+          <div class="chip-row" id="goal-chips">
+            <button type="button" class="chip-select" data-goal="Alcance e descoberta" aria-pressed="true">Alcance e descoberta</button>
+            <button type="button" class="chip-select" data-goal="Engajamento" aria-pressed="false">Engajamento</button>
+            <button type="button" class="chip-select" data-goal="Vendas / conversão" aria-pressed="false">Vendas</button>
+            <button type="button" class="chip-select" data-goal="Autoridade / branding" aria-pressed="false">Autoridade</button>
+          </div>
+        </div>
+
+        <button id="generate-btn" class="btn btn-magenta">Gerar estratégia de hashtags</button>
+        <p class="muted" style="font-size:12px; margin-top:10px; text-align:center;">
+          As hashtags são uma curadoria gerada por IA por nicho e plataforma — não é raspagem de tendências em tempo real.
+        </p>
+      </section>
+
+      <!-- States -->
+      <div id="loading-state" class="state" style="display:none;">
+        <div class="spinner"></div>
+        <p style="font-weight:700;">Montando sua estratégia de hashtags...</p>
+      </div>
+
+      <div id="error-state" class="state" style="display:none;">
+        <div class="empty-mark">!</div>
+        <p id="error-text" style="font-weight:700; margin-top:12px;"></p>
+      </div>
+
+      <div id="empty-state" class="state">
+        <div class="empty-mark">#</div>
+        <p class="muted" style="margin-top:12px;">Preencha o tema acima e gere sua primeira estratégia.</p>
+      </div>
+
+      <!-- Results -->
+      <div id="results" class="results">
+        <div class="tier tier-amplo">
+          <div class="tier-head">
+            <span class="tier-title">Alcance amplo</span>
+            <span class="tier-sub">Volume alto · muita concorrência</span>
+          </div>
+          <div class="tag-wall" id="wall-amplo"></div>
+        </div>
+
+        <div class="tier tier-medio">
+          <div class="tier-head">
+            <span class="tier-title">Alcance médio</span>
+            <span class="tier-sub">Equilíbrio entre volume e nicho</span>
+          </div>
+          <div class="tag-wall" id="wall-medio"></div>
+        </div>
+
+        <div class="tier tier-nichado">
+          <div class="tier-head">
+            <span class="tier-title">Nichado</span>
+            <span class="tier-sub">Público específico · alta conversão</span>
+          </div>
+          <div class="tag-wall" id="wall-nichado"></div>
+        </div>
+
+        <div class="block">
+          <h3>Legenda sugerida</h3>
+          <div class="caption-box" id="caption-box"></div>
+        </div>
+
+        <div class="block">
+          <h3>Dicas de uso</h3>
+          <ul class="tips-list" id="tips-list"></ul>
+        </div>
+
+        <div class="result-actions">
+          <button id="copy-all-btn" class="btn btn-cobalt btn-sm">Copiar todas as hashtags</button>
+          <button id="download-btn" class="btn btn-ghost btn-sm">Baixar .txt</button>
+        </div>
+      </div>
+
+      <footer class="app-footer">
+        <p>Feito com carinho para a comunidade <strong>Gênesis IA</strong></p>
+        <p style="margin-top:8px;">
+          <a href="/privacy-policy" rel="noopener noreferrer" target="_blank">Política de Privacidade</a>
+          ·
+          <a href="/data-deletion" rel="noopener noreferrer" target="_blank">Solicitar Exclusão de Dados</a>
+        </p>
+      </footer>
+    </div>
+  </div>
+
+  <!-- ============ API KEY MODAL ============ -->
+  <div id="key-modal" class="modal-overlay">
+    <div class="modal-overlay" style="position:absolute; inset:0; background:transparent;"></div>
+    <div class="modal">
+      <div class="modal-head">
+        <h3>Gerenciar chaves de API</h3>
+        <button id="modal-close" class="modal-close" aria-label="Fechar">×</button>
+      </div>
+      <div id="modal-key-inputs"></div>
+      <div style="display:flex; gap:10px; flex-wrap:wrap; margin-top:18px;">
+        <button id="modal-save" class="btn btn-cobalt btn-sm">Salvar</button>
+        <button id="modal-clear" class="btn btn-ghost btn-sm">Limpar todas as chaves</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="js/config.js"></script>
+  <script src="js/kill-switch.js"></script>
+  <script src="js/rate-limiter.js"></script>
+  <script src="js/membership-gate.js"></script>
+  <script src="js/api-key-manager.js"></script>
+  <script src="js/feedback-widget.js"></script>
+  <script src="js/app.js"></script>
+
+
+</body></html>
