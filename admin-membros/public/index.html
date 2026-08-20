@@ -364,7 +364,6 @@ function openEdit(id) {
   $('member-overlay').classList.add('show');
 }
 
-$('new-member-btn').addEventListener('click', openNew);
 $('cancel-btn').addEventListener('click', () => $('member-overlay').classList.remove('show'));
 $('regen-pw-btn').addEventListener('click', () => { regenFlag = true; $('save-btn').click(); });
 
