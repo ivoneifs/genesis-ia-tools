@@ -42,6 +42,32 @@ function genPassword() {
   return crypto.randomBytes(9).toString('base64').replace(/[^a-zA-Z0-9]/g, '').slice(0, 12);
 }
 
+function normalizePhone(p) {
+  return (p || '').replace(/\D/g, '');
+}
+
+function isAllowedGateOrigin(origin) {
+  if (!origin) return false;
+  try {
+    const host = new URL(origin).hostname;
+    return host === 'appsbrasil.store' || host.endsWith('.appsbrasil.store') || host === 'localhost';
+  } catch (e) { return false; }
+}
+
+// CORS for the public verify-membership endpoint only — the 27 tool sites call
+// this cross-origin from their own subdomains. Mirrors the allow-list already
+// enforced client-side in each tool's membership-gate.js.
+app.use('/api/verify-membership', (req, res, next) => {
+  const origin = req.headers.origin;
+  if (isAllowedGateOrigin(origin)) {
+    res.setHeader('Access-Control-Allow-Origin', origin);
+    res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
+    res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+  }
+  if (req.method === 'OPTIONS') return res.status(204).end();
+  next();
+});
+
 app.post('/api/login', ah(async (req, res) => {
   const { email, password } = req.body || {};
   const emailNorm = (email || '').trim().toLowerCase();
@@ -98,6 +124,36 @@ app.delete('/api/admins/:id', requireAuth, ah(async (req, res) => {
   if (countRows[0].n <= 1) return res.status(400).json({ error: 'cannot_delete_last_admin' });
   await pool.query('delete from public.admins where id = $1', [req.params.id]);
   res.json({ ok: true });
+}));
+
+// Public — called anonymously by the browser gate on all 27 tool sites. Mirrors
+// the contract the n8n webhook used to fulfill: POST {email, phone} ->
+// {verified, display_name, member: {buyer_name}, reason, tools_enabled}.
+app.post('/api/verify-membership', ah(async (req, res) => {
+  const { email, phone } = req.body || {};
+  const emailNorm = (email || '').trim().toLowerCase();
+  const phoneNorm = normalizePhone(phone);
+
+  if (!emailNorm && !phoneNorm) return res.status(400).json({ verified: false, reason: 'invalid' });
+
+  const { rows } = await pool.query(
+    `select display_name, buyer_name, status, tools_enabled
+     from public.members
+     where ($1 <> '' and lower(email) = $1) or ($2 <> '' and regexp_replace(coalesce(phone,''), '\\D', '', 'g') = $2)
+     limit 1`,
+    [emailNorm, phoneNorm]
+  );
+  const member = rows[0];
+
+  if (!member) return res.json({ verified: false, reason: 'not_found' });
+  if (member.status !== 'active') return res.json({ verified: false, reason: 'inactive' });
+
+  res.json({
+    verified: true,
+    display_name: member.display_name || member.buyer_name || undefined,
+    member: { buyer_name: member.buyer_name || member.display_name },
+    tools_enabled: member.tools_enabled,
+  });
 }));
 
 app.get('/api/members', requireAuth, ah(async (req, res) => {
