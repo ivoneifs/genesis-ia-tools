@@ -314,19 +314,6 @@ const ApiKeyManager = (function() {
       input.autocomplete = 'off';
       input.setAttribute('data-service', svc);
 
-      const toggleBtn = document.createElement('button');
-      toggleBtn.type = 'button';
-      toggleBtn.className = 'key-toggle';
-      toggleBtn.textContent = 'Mostrar';
-      toggleBtn.addEventListener('click', function() {
-        if (input.type === 'password') {
-          input.type = 'text';
-          toggleBtn.textContent = 'Ocultar';
-        } else {
-          input.type = 'password';
-          toggleBtn.textContent = 'Mostrar';
-        }
-      });
 
       const status = document.createElement('div');
       status.className = 'key-status' + (currentKey ? ' saved' : '');
@@ -341,7 +328,6 @@ const ApiKeyManager = (function() {
       });
 
       wrapper.appendChild(input);
-      wrapper.appendChild(toggleBtn);
       group.appendChild(label);
       group.appendChild(wrapper);
       group.appendChild(status);
