@@ -43,13 +43,13 @@ app.post('/api/register', ah(async (req, res) => {
   const passwordHash = await bcrypt.hash(password, 10);
   const { rows } = await pool.query(
     `insert into public.members (email, display_name, status, tools_enabled, source, password_hash)
-     values ($1, $2, 'active', true, 'self_signup', $3)
+     values ($1, $2, 'pending', false, 'self_signup', $3)
      returning id, email, display_name, status, tools_enabled`,
     [emailNorm, display_name || null, passwordHash]
   );
 
-  req.session.member_id = rows[0].id;
-  res.json({ ok: true, member: rows[0] });
+  // Not logging them in: access is gated on admin approval (status -> active).
+  res.json({ ok: true, pending: true, member: rows[0] });
 }));
 
 app.post('/api/login', ah(async (req, res) => {
@@ -67,6 +67,7 @@ app.post('/api/login', ah(async (req, res) => {
 
   const ok = await bcrypt.compare(password, member.password_hash);
   if (!ok) return res.status(401).json({ error: 'invalid_credentials' });
+  if (member.status === 'pending') return res.status(403).json({ error: 'pending_approval' });
   if (member.status !== 'active') return res.status(403).json({ error: 'inactive' });
 
   req.session.member_id = member.id;

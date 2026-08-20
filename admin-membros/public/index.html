@@ -59,7 +59,8 @@
   .badge{display:inline-block;padding:3px 10px;border-radius:999px;font-size:11.5px;font-weight:700;}
   .badge.active{background:rgba(34,197,94,.15);color:var(--good);}
   .badge.inactive,.badge.cancelled,.badge.refunded{background:rgba(239,68,68,.15);color:var(--bad);}
-  .badge.expired{background:rgba(245,158,11,.15);color:var(--warn);}
+  .badge.expired,.badge.pending{background:rgba(245,158,11,.15);color:var(--warn);}
+  .approve-btn{background:linear-gradient(90deg,var(--accent-1),var(--accent-2));color:#fff;border:none;border-radius:8px;padding:6px 12px;cursor:pointer;font-size:12.5px;font-weight:700;margin-right:6px;}
   .icon-btn{background:none;border:1px solid var(--line);color:var(--ink-soft);border-radius:8px;padding:6px 10px;cursor:pointer;font-size:12.5px;margin-right:6px;}
   .icon-btn:hover{border-color:var(--accent-1);color:var(--ink);}
   .icon-btn.danger:hover{border-color:var(--bad);color:var(--bad);}
@@ -143,6 +144,7 @@
       <div class="tab-panel active" id="tab-members">
         <div class="stats">
           <div class="stat"><div class="n" id="stat-total">–</div><div class="l">Total de membros</div></div>
+          <div class="stat"><div class="n" id="stat-pending">–</div><div class="l">Aguardando aprovação</div></div>
           <div class="stat"><div class="n" id="stat-active">–</div><div class="l">Ativos</div></div>
           <div class="stat"><div class="n" id="stat-expiring">–</div><div class="l">Expiram em 7 dias</div></div>
           <div class="stat"><div class="n" id="stat-expired">–</div><div class="l">Expirados</div></div>
@@ -221,6 +223,7 @@
           <div class="field"><label>Nome</label><input id="m-name" placeholder="Nome completo"></div>
           <div class="field"><label>Status</label>
             <select id="m-status">
+              <option value="pending">Pendente (aguardando aprovação)</option>
               <option value="active">Ativo</option>
               <option value="inactive">Inativo</option>
               <option value="cancelled">Cancelado</option>
@@ -294,10 +297,13 @@ function daysLeft(expiresAt) {
 
 function renderStats() {
   $('stat-total').textContent = members.length;
+  $('stat-pending').textContent = members.filter(m => m.status === 'pending').length;
   $('stat-active').textContent = members.filter(m => m.status === 'active').length;
   $('stat-expiring').textContent = members.filter(m => { const d = daysLeft(m.access_expires_at); return d !== null && d >= 0 && d <= 7; }).length;
   $('stat-expired').textContent = members.filter(m => { const d = daysLeft(m.access_expires_at); return d !== null && d < 0; }).length;
 }
+
+const STATUS_LABEL = { pending: 'Pendente', active: 'Ativo', inactive: 'Inativo', cancelled: 'Cancelado', refunded: 'Reembolsado' };
 
 function renderTable() {
   const tbody = $('members-tbody');
@@ -316,10 +322,11 @@ function renderTable() {
     tr.innerHTML = `
       <td><strong>${m.display_name || m.buyer_name || '—'}</strong><br><span style="color:var(--ink-soft);font-size:12.5px;">${m.email || '—'}</span></td>
       <td>${m.phone || '—'}</td>
-      <td><span class="badge ${m.status}">${m.status}</span></td>
+      <td><span class="badge ${m.status}">${STATUS_LABEL[m.status] || m.status}</span></td>
       <td>${validadeHtml}</td>
       <td>${m.tools_enabled ? '✅' : '🚫'}</td>
       <td style="white-space:nowrap;">
+        ${m.status === 'pending' ? `<button class="approve-btn" data-approve="${m.id}">Aprovar</button>` : ''}
         <button class="icon-btn" data-edit="${m.id}">Editar</button>
         <button class="icon-btn danger" data-del="${m.id}">Excluir</button>
       </td>`;
@@ -327,6 +334,12 @@ function renderTable() {
   }
   tbody.querySelectorAll('[data-edit]').forEach(b => b.addEventListener('click', () => openEdit(b.dataset.edit)));
   tbody.querySelectorAll('[data-del]').forEach(b => b.addEventListener('click', () => delMember(b.dataset.del)));
+  tbody.querySelectorAll('[data-approve]').forEach(b => b.addEventListener('click', () => approveMember(b.dataset.approve)));
+}
+
+async function approveMember(id) {
+  await api('/api/members/' + id, { method: 'PATCH', body: JSON.stringify({ status: 'active', tools_enabled: true }) });
+  await loadMembers();
 }
 
 async function loadMembers() {

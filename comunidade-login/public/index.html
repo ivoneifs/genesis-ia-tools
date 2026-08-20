@@ -110,6 +110,13 @@
       <p>Seu acesso está liberado. Volte a qualquer uma das ferramentas — o login já fica salvo.</p>
       <button class="submit-btn" id="logout-btn">Sair</button>
     </div>
+
+    <div class="welcome" id="pending-view">
+      <div class="sun"></div>
+      <h2>Conta criada!</h2>
+      <p>Sua conta está aguardando aprovação de um administrador. Assim que for liberada, você já consegue entrar com o e-mail e senha cadastrados.</p>
+      <button class="submit-btn" id="pending-back-btn">Voltar</button>
+    </div>
   </div>
 
 <script>
@@ -136,6 +143,7 @@ const ERR_MSG = {
   weak_password: 'A senha precisa ter pelo menos 6 caracteres.',
   email_already_registered: 'Esse e-mail já está cadastrado — tenta entrar em vez de criar conta.',
   invalid_credentials: 'E-mail ou senha incorretos.',
+  pending_approval: 'Sua conta ainda está aguardando aprovação de um administrador.',
   inactive: 'Seu acesso está inativo. Fale com o suporte.',
   missing_credentials: 'Preencha e-mail e senha.',
 };
@@ -150,12 +158,20 @@ async function api(path, opts) {
 function showWelcome(member) {
   $('auth-view').style.display = 'none';
   $('welcome-view').style.display = 'block';
+  $('pending-view').style.display = 'none';
   $('welcome-name').textContent = member.display_name ? `Bem-vindo, ${member.display_name}!` : 'Bem-vindo!';
+}
+function showPending() {
+  $('auth-view').style.display = 'none';
+  $('welcome-view').style.display = 'none';
+  $('pending-view').style.display = 'block';
 }
 function showAuth() {
   $('auth-view').style.display = 'block';
   $('welcome-view').style.display = 'none';
+  $('pending-view').style.display = 'none';
 }
+$('pending-back-btn').addEventListener('click', () => { setMode('login'); showAuth(); });
 
 $('auth-form').addEventListener('submit', async (e) => {
   e.preventDefault();
@@ -167,10 +183,11 @@ $('auth-form').addEventListener('submit', async (e) => {
     let result;
     if (mode === 'register') {
       result = await api('/api/register', { method: 'POST', body: JSON.stringify({ email, password, display_name: $('f-name').value || null }) });
+      showPending();
     } else {
       result = await api('/api/login', { method: 'POST', body: JSON.stringify({ email, password }) });
+      showWelcome(result.member);
     }
-    showWelcome(result.member);
   } catch (err) {
     $('form-err').textContent = ERR_MSG[err.message] || ('Erro: ' + err.message);
   } finally {
