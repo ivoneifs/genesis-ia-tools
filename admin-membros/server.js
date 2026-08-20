@@ -5,12 +5,11 @@ const { Pool } = require('pg');
 const crypto = require('crypto');
 const path = require('path');
 
-const ADMIN_PANEL_PASSWORD = process.env.ADMIN_PANEL_PASSWORD;
 const SESSION_SECRET = process.env.SESSION_SECRET;
 const DATABASE_URL = process.env.DATABASE_URL;
 
-if (!ADMIN_PANEL_PASSWORD || !SESSION_SECRET || !DATABASE_URL) {
-  console.error('Missing required env vars: ADMIN_PANEL_PASSWORD, SESSION_SECRET, DATABASE_URL');
+if (!SESSION_SECRET || !DATABASE_URL) {
+  console.error('Missing required env vars: SESSION_SECRET, DATABASE_URL');
   process.exit(1);
 }
 
@@ -43,14 +42,23 @@ function genPassword() {
   return crypto.randomBytes(9).toString('base64').replace(/[^a-zA-Z0-9]/g, '').slice(0, 12);
 }
 
-app.post('/api/login', (req, res) => {
-  const { password } = req.body || {};
-  if (password === ADMIN_PANEL_PASSWORD) {
-    req.session.authed = true;
-    return res.json({ ok: true });
-  }
-  return res.status(401).json({ error: 'wrong_password' });
-});
+app.post('/api/login', ah(async (req, res) => {
+  const { email, password } = req.body || {};
+  const emailNorm = (email || '').trim().toLowerCase();
+  if (!emailNorm || !password) return res.status(401).json({ error: 'wrong_password' });
+
+  const { rows } = await pool.query('select id, email, password_hash from public.admins where lower(email) = $1', [emailNorm]);
+  const admin = rows[0];
+  if (!admin) return res.status(401).json({ error: 'wrong_password' });
+
+  const ok = await bcrypt.compare(password, admin.password_hash);
+  if (!ok) return res.status(401).json({ error: 'wrong_password' });
+
+  req.session.authed = true;
+  req.session.admin_id = admin.id;
+  req.session.admin_email = admin.email;
+  res.json({ ok: true, email: admin.email, id: admin.id });
+}));
 
 app.post('/api/logout', (req, res) => {
   req.session = null;
@@ -58,8 +66,39 @@ app.post('/api/logout', (req, res) => {
 });
 
 app.get('/api/session', (req, res) => {
-  res.json({ authed: !!(req.session && req.session.authed) });
+  res.json({
+    authed: !!(req.session && req.session.authed),
+    email: req.session && req.session.admin_email,
+    id: req.session && req.session.admin_id,
+  });
 });
+
+app.get('/api/admins', requireAuth, ah(async (req, res) => {
+  const { rows } = await pool.query('select id, email, created_at from public.admins order by created_at asc');
+  res.json(rows);
+}));
+
+app.post('/api/admins', requireAuth, ah(async (req, res) => {
+  const { email, password } = req.body || {};
+  const emailNorm = (email || '').trim().toLowerCase();
+  if (!emailNorm) return res.status(400).json({ error: 'email_required' });
+  if (!password || password.length < 8) return res.status(400).json({ error: 'weak_password' });
+
+  const passwordHash = await bcrypt.hash(password, 10);
+  const { rows } = await pool.query(
+    'insert into public.admins (email, password_hash) values ($1,$2) returning id, email, created_at',
+    [emailNorm, passwordHash]
+  );
+  res.json(rows[0]);
+}));
+
+app.delete('/api/admins/:id', requireAuth, ah(async (req, res) => {
+  if (req.params.id === req.session.admin_id) return res.status(400).json({ error: 'cannot_delete_self' });
+  const { rows: countRows } = await pool.query('select count(*)::int as n from public.admins');
+  if (countRows[0].n <= 1) return res.status(400).json({ error: 'cannot_delete_last_admin' });
+  await pool.query('delete from public.admins where id = $1', [req.params.id]);
+  res.json({ ok: true });
+}));
 
 app.get('/api/members', requireAuth, ah(async (req, res) => {
   const { rows } = await pool.query(
@@ -199,6 +238,7 @@ app.use(express.static(path.join(__dirname, 'public')));
 app.use((err, req, res, next) => {
   console.error('Request error:', err);
   if (err && err.code === '23505') {
+    if (err.constraint === 'admins_email_key') return res.status(409).json({ error: 'admin_email_taken' });
     return res.status(409).json({ error: 'duplicate_email_or_phone' });
   }
   res.status(500).json({ error: 'internal_error' });

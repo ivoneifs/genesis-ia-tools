@@ -117,7 +117,8 @@
     <div class="login-card">
       <h1>Admin — Membros</h1>
       <p class="sub">Comunidade Gênesis IA</p>
-      <input type="password" id="login-password" placeholder="Senha de admin" autocomplete="current-password">
+      <input type="email" id="login-email" placeholder="E-mail do admin" autocomplete="username" style="width:100%;margin:20px 0 0;padding:13px 16px;border-radius:10px;border:1px solid var(--line);background:var(--panel-2);color:var(--ink);font-size:15px;">
+      <input type="password" id="login-password" placeholder="Senha" autocomplete="current-password">
       <div class="err" id="login-err"></div>
       <button class="grad-btn" style="width:100%" id="login-btn">Entrar</button>
     </div>
@@ -139,6 +140,7 @@
       <div class="tabs">
         <button class="tab-btn active" data-tab="members">Membros</button>
         <button class="tab-btn" data-tab="plans">Preços</button>
+        <button class="tab-btn" data-tab="admins">Admins</button>
       </div>
 
       <div class="tab-panel active" id="tab-members">
@@ -172,6 +174,17 @@
         <p class="sub" style="margin-top:-8px;">Esses preços ficam disponíveis publicamente (leitura) via Supabase, prontos pra sua página de vendas consumir. Pagamento (Mercado Pago) ainda não está conectado — é só cadastro dos planos por enquanto.</p>
         <div class="plans-grid" id="plans-grid"></div>
         <div class="empty" id="plans-empty" style="display:none;">Nenhum plano cadastrado ainda.</div>
+      </div>
+
+      <div class="tab-panel" id="tab-admins">
+        <p class="sub" style="margin-top:-8px;">Quem tem conta aqui consegue gerenciar membros e preços. Logado como <strong id="current-admin-email">–</strong>.</p>
+        <button class="grad-btn" id="new-admin-btn" style="margin-bottom:16px;">+ Novo admin</button>
+        <div class="panel">
+          <table>
+            <thead><tr><th>E-mail</th><th>Criado em</th><th></th></tr></thead>
+            <tbody id="admins-tbody"></tbody>
+          </table>
+        </div>
       </div>
     </div>
   </div>
@@ -209,6 +222,21 @@
         <div class="modal-actions">
           <button type="button" class="btn-ghost" id="plan-cancel-btn">Cancelar</button>
           <button type="submit" class="grad-btn">Salvar plano</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <div class="overlay" id="admin-overlay">
+    <div class="modal">
+      <h2>Novo admin</h2>
+      <form id="admin-form">
+        <div class="field"><label>E-mail</label><input id="a-email" type="email" placeholder="email@exemplo.com" required></div>
+        <div class="field"><label>Senha</label><input id="a-password" type="password" placeholder="mínimo 8 caracteres" minlength="8" required></div>
+        <div class="err" id="admin-err"></div>
+        <div class="modal-actions">
+          <button type="button" class="btn-ghost" id="admin-cancel-btn">Cancelar</button>
+          <button type="submit" class="grad-btn">Criar admin</button>
         </div>
       </form>
     </div>
@@ -270,20 +298,23 @@ function showLogin() {
   $('login-screen').style.display = 'flex';
   $('app-screen').style.display = 'none';
 }
-function showApp() {
+function showApp(email, id) {
   $('login-screen').style.display = 'none';
   $('app-screen').style.display = 'block';
+  if (email) $('current-admin-email').textContent = email;
+  if (id) currentAdminId = id;
   loadMembers();
 }
 
 $('login-btn').addEventListener('click', async () => {
   $('login-err').textContent = '';
   try {
-    await api('/api/login', { method: 'POST', body: JSON.stringify({ password: $('login-password').value }) });
-    showApp();
-  } catch (e) { $('login-err').textContent = 'Senha incorreta.'; }
+    const r = await api('/api/login', { method: 'POST', body: JSON.stringify({ email: $('login-email').value, password: $('login-password').value }) });
+    showApp(r.email, r.id);
+  } catch (e) { $('login-err').textContent = 'E-mail ou senha incorretos.'; }
 });
 $('login-password').addEventListener('keydown', (e) => { if (e.key === 'Enter') $('login-btn').click(); });
+$('login-email').addEventListener('keydown', (e) => { if (e.key === 'Enter') $('login-password').focus(); });
 
 $('logout-btn').addEventListener('click', async () => {
   await api('/api/logout', { method: 'POST' });
@@ -437,11 +468,54 @@ document.querySelectorAll('.tab-btn').forEach(btn => {
     document.querySelectorAll('.tab-btn').forEach(b => b.classList.toggle('active', b === btn));
     $('tab-members').classList.toggle('active', activeTab === 'members');
     $('tab-plans').classList.toggle('active', activeTab === 'plans');
+    $('tab-admins').classList.toggle('active', activeTab === 'admins');
+    $('tab-new-btn').style.display = activeTab === 'admins' ? 'none' : 'inline-block';
     $('tab-new-btn').textContent = activeTab === 'members' ? '+ Novo membro' : '+ Novo plano';
     if (activeTab === 'plans') loadPlans();
+    if (activeTab === 'admins') loadAdmins();
   });
 });
 $('tab-new-btn').addEventListener('click', () => { if (activeTab === 'members') openNew(); else openPlanNew(); });
+
+// ---- Admins ----
+let admins = [];
+let currentAdminId = null;
+
+async function loadAdmins() {
+  admins = await api('/api/admins');
+  const tbody = $('admins-tbody');
+  tbody.innerHTML = '';
+  for (const a of admins) {
+    const tr = document.createElement('tr');
+    const isSelf = a.id === currentAdminId;
+    tr.innerHTML = `
+      <td>${a.email}${isSelf ? ' <span style="color:var(--ink-soft);font-size:12px;">(você)</span>' : ''}</td>
+      <td>${new Date(a.created_at).toLocaleDateString('pt-BR')}</td>
+      <td>${isSelf ? '' : `<button class="icon-btn danger" data-admin-del="${a.id}">Excluir</button>`}</td>`;
+    tbody.appendChild(tr);
+  }
+  tbody.querySelectorAll('[data-admin-del]').forEach(b => b.addEventListener('click', async () => {
+    if (!confirm('Remover esse admin? Ele perde acesso ao painel imediatamente.')) return;
+    try {
+      await api('/api/admins/' + b.dataset.adminDel, { method: 'DELETE' });
+      await loadAdmins();
+    } catch (e) { alert('Erro: ' + e.message); }
+  }));
+}
+
+$('admin-form').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  $('admin-err').textContent = '';
+  const ADMIN_ERR = { email_required: 'Informe um e-mail.', weak_password: 'A senha precisa ter pelo menos 8 caracteres.', admin_email_taken: 'Já existe um admin com esse e-mail.' };
+  try {
+    await api('/api/admins', { method: 'POST', body: JSON.stringify({ email: $('a-email').value, password: $('a-password').value }) });
+    $('admin-overlay').classList.remove('show');
+    $('admin-form').reset();
+    await loadAdmins();
+  } catch (err) { $('admin-err').textContent = ADMIN_ERR[err.message] || err.message; }
+});
+$('admin-cancel-btn').addEventListener('click', () => $('admin-overlay').classList.remove('show'));
+$('new-admin-btn').addEventListener('click', () => { $('admin-err').textContent = ''; $('admin-form').reset(); $('admin-overlay').classList.add('show'); });
 
 // ---- Plans ----
 let plans = [];
@@ -539,7 +613,7 @@ $('plan-form').addEventListener('submit', async (e) => {
 (async () => {
   try {
     const s = await api('/api/session');
-    if (s.authed) showApp(); else showLogin();
+    if (s.authed) showApp(s.email, s.id); else showLogin();
   } catch (e) { showLogin(); }
 })();
 </script>
