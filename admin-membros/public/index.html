@@ -240,6 +240,7 @@
           <input type="checkbox" id="m-tools-enabled" checked style="width:auto;"> Ferramentas liberadas (kill switch)
         </label>
         <div class="pw-reveal" id="pw-reveal"></div>
+        <div class="err" id="member-err"></div>
         <div class="modal-actions">
           <button type="button" class="btn-ghost" id="regen-pw-btn">Gerar nova senha</button>
           <button type="button" class="btn-ghost" id="cancel-btn">Cancelar</button>
@@ -340,6 +341,7 @@ function openNew() {
   $('m-id').value = '';
   $('m-tools-enabled').checked = true;
   $('pw-reveal').classList.remove('show');
+  $('member-err').textContent = '';
   regenFlag = false;
   $('member-overlay').classList.add('show');
 }
@@ -357,6 +359,7 @@ function openEdit(id) {
   $('m-days').value = m.access_days || '';
   $('m-tools-enabled').checked = !!m.tools_enabled;
   $('pw-reveal').classList.remove('show');
+  $('member-err').textContent = '';
   regenFlag = false;
   $('member-overlay').classList.add('show');
 }
@@ -371,8 +374,15 @@ async function delMember(id) {
   await loadMembers();
 }
 
+const MEMBER_ERR_MSG = {
+  email_or_phone_required: 'Preencha pelo menos e-mail ou WhatsApp — o sistema de acesso precisa de um dos dois pra identificar o membro.',
+  no_fields: 'Nada foi alterado.',
+  not_found: 'Esse membro não existe mais (pode ter sido excluído).',
+};
+
 $('member-form').addEventListener('submit', async (e) => {
   e.preventDefault();
+  $('member-err').textContent = '';
   const id = $('m-id').value;
   const payload = {
     display_name: $('m-name').value || null,
@@ -384,11 +394,16 @@ $('member-form').addEventListener('submit', async (e) => {
     tools_enabled: $('m-tools-enabled').checked,
   };
   let result;
-  if (id) {
-    if (regenFlag) payload.regenerate_password = true;
-    result = await api('/api/members/' + id, { method: 'PATCH', body: JSON.stringify(payload) });
-  } else {
-    result = await api('/api/members', { method: 'POST', body: JSON.stringify(payload) });
+  try {
+    if (id) {
+      if (regenFlag) payload.regenerate_password = true;
+      result = await api('/api/members/' + id, { method: 'PATCH', body: JSON.stringify(payload) });
+    } else {
+      result = await api('/api/members', { method: 'POST', body: JSON.stringify(payload) });
+    }
+  } catch (err) {
+    $('member-err').textContent = MEMBER_ERR_MSG[err.message] || ('Erro ao salvar: ' + err.message);
+    return;
   }
   regenFlag = false;
   if (result.generated_password) {
@@ -496,8 +511,13 @@ $('plan-form').addEventListener('submit', async (e) => {
     is_featured: $('p-featured').checked,
     is_active: $('p-active').checked,
   };
-  if (id) await api('/api/plans/' + id, { method: 'PATCH', body: JSON.stringify(payload) });
-  else await api('/api/plans', { method: 'POST', body: JSON.stringify(payload) });
+  try {
+    if (id) await api('/api/plans/' + id, { method: 'PATCH', body: JSON.stringify(payload) });
+    else await api('/api/plans', { method: 'POST', body: JSON.stringify(payload) });
+  } catch (err) {
+    alert('Erro ao salvar plano: ' + err.message);
+    return;
+  }
   $('plan-overlay').classList.remove('show');
   await loadPlans();
 });
