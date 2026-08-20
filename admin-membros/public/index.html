@@ -1,0 +1,513 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Admin — Membros Gênesis IA</title>
+<style>
+  :root{
+    --bg:#0a0a12; --panel:#12121e; --panel-2:#181826;
+    --line:#25253a; --ink:#f2f2fa; --ink-soft:#9b9bb8;
+    --accent-1:#7c5cff; --accent-2:#ff5ca8;
+    --good:#22c55e; --bad:#ef4444; --warn:#f59e0b;
+    --radius:14px;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0; min-height:100vh; background:var(--bg); color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;
+  }
+  .wrap{max-width:1180px;margin:0 auto;padding:32px 24px 80px;}
+  h1{font-size:26px;margin:0 0 4px;letter-spacing:-.01em;}
+  .sub{color:var(--ink-soft);margin:0 0 28px;font-size:14px;}
+  .grad-btn{
+    background:linear-gradient(90deg, var(--accent-1), var(--accent-2));
+    color:#fff;border:none;border-radius:999px;padding:11px 22px;font-weight:700;font-size:14px;
+    cursor:pointer;transition:transform .15s ease, box-shadow .15s ease;
+  }
+  .grad-btn:hover{transform:translateY(-1px);box-shadow:0 8px 20px -8px rgba(124,92,255,.6);}
+  .grad-btn:disabled{opacity:.5;cursor:not-allowed;transform:none;}
+
+  /* LOGIN */
+  #login-screen{display:flex;min-height:100vh;align-items:center;justify-content:center;padding:24px;}
+  .login-card{
+    background:var(--panel);border:1px solid var(--line);border-radius:20px;padding:40px 36px;
+    max-width:380px;width:100%;text-align:center;
+  }
+  .login-card h1{font-size:22px;}
+  .login-card input{
+    width:100%;margin:20px 0;padding:13px 16px;border-radius:10px;border:1px solid var(--line);
+    background:var(--panel-2);color:var(--ink);font-size:15px;
+  }
+  .login-card input:focus{outline:2px solid var(--accent-1);}
+  .err{color:var(--bad);font-size:13px;min-height:18px;margin-top:8px;}
+
+  /* APP */
+  #app-screen{display:none;}
+  .topbar{display:flex;justify-content:space-between;align-items:center;margin-bottom:28px;flex-wrap:wrap;gap:12px;}
+  .stats{display:flex;gap:14px;flex-wrap:wrap;margin-bottom:24px;}
+  .stat{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);padding:16px 20px;min-width:140px;}
+  .stat .n{font-size:24px;font-weight:800;background:linear-gradient(90deg,var(--accent-1),var(--accent-2));-webkit-background-clip:text;background-clip:text;color:transparent;}
+  .stat .l{font-size:12.5px;color:var(--ink-soft);margin-top:2px;}
+
+  .panel{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);overflow:hidden;}
+  table{width:100%;border-collapse:collapse;font-size:13.5px;}
+  th{text-align:left;padding:12px 14px;color:var(--ink-soft);font-weight:600;font-size:12px;text-transform:uppercase;letter-spacing:.03em;border-bottom:1px solid var(--line);}
+  td{padding:12px 14px;border-bottom:1px solid var(--line);vertical-align:middle;}
+  tr:last-child td{border-bottom:none;}
+  tr:hover td{background:rgba(124,92,255,.05);}
+  .badge{display:inline-block;padding:3px 10px;border-radius:999px;font-size:11.5px;font-weight:700;}
+  .badge.active{background:rgba(34,197,94,.15);color:var(--good);}
+  .badge.inactive,.badge.cancelled,.badge.refunded{background:rgba(239,68,68,.15);color:var(--bad);}
+  .badge.expired{background:rgba(245,158,11,.15);color:var(--warn);}
+  .icon-btn{background:none;border:1px solid var(--line);color:var(--ink-soft);border-radius:8px;padding:6px 10px;cursor:pointer;font-size:12.5px;margin-right:6px;}
+  .icon-btn:hover{border-color:var(--accent-1);color:var(--ink);}
+  .icon-btn.danger:hover{border-color:var(--bad);color:var(--bad);}
+
+  /* MODAL */
+  .overlay{display:none;position:fixed;inset:0;background:rgba(5,5,10,.7);align-items:center;justify-content:center;z-index:50;padding:20px;}
+  .overlay.show{display:flex;}
+  .modal{background:var(--panel);border:1px solid var(--line);border-radius:18px;max-width:440px;width:100%;padding:28px;}
+  .modal h2{margin:0 0 18px;font-size:18px;}
+  .field{margin-bottom:14px;}
+  .field label{display:block;font-size:12.5px;color:var(--ink-soft);margin-bottom:6px;}
+  .field input, .field select{
+    width:100%;padding:10px 12px;border-radius:9px;border:1px solid var(--line);
+    background:var(--panel-2);color:var(--ink);font-size:14px;
+  }
+  .field-row{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+  .modal-actions{display:flex;gap:10px;justify-content:flex-end;margin-top:20px;}
+  .btn-ghost{background:none;border:1px solid var(--line);color:var(--ink-soft);border-radius:999px;padding:10px 18px;cursor:pointer;font-size:14px;}
+  .pw-reveal{
+    margin-top:14px;padding:14px;border-radius:10px;background:rgba(124,92,255,.1);
+    border:1px solid rgba(124,92,255,.3);font-family:ui-monospace,monospace;font-size:14px;
+    display:none;word-break:break-all;
+  }
+  .pw-reveal.show{display:block;}
+  .empty{padding:60px 20px;text-align:center;color:var(--ink-soft);}
+
+  .tabs{display:flex;gap:6px;margin-bottom:24px;border-bottom:1px solid var(--line);}
+  .tab-btn{background:none;border:none;color:var(--ink-soft);padding:10px 16px;font-size:14px;font-weight:600;cursor:pointer;border-bottom:2px solid transparent;}
+  .tab-btn.active{color:var(--ink);border-bottom-color:var(--accent-1);}
+  .tab-panel{display:none;}
+  .tab-panel.active{display:block;}
+
+  .plans-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:16px;margin-bottom:16px;}
+  .plan-card{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);padding:22px;position:relative;}
+  .plan-card.featured{border-color:var(--accent-1);background:linear-gradient(160deg, rgba(124,92,255,.12), rgba(255,92,168,.06));}
+  .plan-card .badge-pop{position:absolute;top:-11px;left:20px;background:linear-gradient(90deg,var(--accent-1),var(--accent-2));color:#fff;font-size:10.5px;font-weight:800;padding:4px 10px;border-radius:999px;letter-spacing:.03em;}
+  .plan-card .p-name{font-size:15px;font-weight:700;margin:6px 0 2px;}
+  .plan-card .p-sub{font-size:12.5px;color:var(--ink-soft);margin-bottom:14px;}
+  .plan-card .p-price{font-size:28px;font-weight:800;}
+  .plan-card .p-period{font-size:12.5px;color:var(--ink-soft);}
+  .plan-card .p-features{list-style:none;padding:0;margin:14px 0;font-size:13px;color:var(--ink-soft);}
+  .plan-card .p-features li{padding:4px 0;}
+  .plan-card .p-actions{display:flex;gap:8px;margin-top:14px;}
+  .plan-card.inactive{opacity:.45;}
+  @media (max-width:720px){
+    .field-row{grid-template-columns:1fr;}
+    table{display:block;overflow-x:auto;}
+  }
+</style>
+</head>
+<body>
+
+  <div id="login-screen">
+    <div class="login-card">
+      <h1>Admin — Membros</h1>
+      <p class="sub">Comunidade Gênesis IA</p>
+      <input type="password" id="login-password" placeholder="Senha de admin" autocomplete="current-password">
+      <div class="err" id="login-err"></div>
+      <button class="grad-btn" style="width:100%" id="login-btn">Entrar</button>
+    </div>
+  </div>
+
+  <div id="app-screen">
+    <div class="wrap">
+      <div class="topbar">
+        <div>
+          <h1>Membros</h1>
+          <p class="sub">Gerencie acesso às 27 ferramentas — usuário, senha e validade em dias.</p>
+        </div>
+        <div style="display:flex;gap:10px;">
+          <button class="btn-ghost" id="logout-btn">Sair</button>
+          <button class="grad-btn" id="tab-new-btn">+ Novo</button>
+        </div>
+      </div>
+
+      <div class="tabs">
+        <button class="tab-btn active" data-tab="members">Membros</button>
+        <button class="tab-btn" data-tab="plans">Preços</button>
+      </div>
+
+      <div class="tab-panel active" id="tab-members">
+        <div class="stats">
+          <div class="stat"><div class="n" id="stat-total">–</div><div class="l">Total de membros</div></div>
+          <div class="stat"><div class="n" id="stat-active">–</div><div class="l">Ativos</div></div>
+          <div class="stat"><div class="n" id="stat-expiring">–</div><div class="l">Expiram em 7 dias</div></div>
+          <div class="stat"><div class="n" id="stat-expired">–</div><div class="l">Expirados</div></div>
+        </div>
+
+        <div class="panel">
+          <table id="members-table">
+            <thead>
+              <tr>
+                <th>Nome / E-mail</th>
+                <th>Telefone</th>
+                <th>Status</th>
+                <th>Validade</th>
+                <th>Ferramentas</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody id="members-tbody"></tbody>
+          </table>
+          <div class="empty" id="empty-state" style="display:none;">Nenhum membro cadastrado ainda.</div>
+        </div>
+      </div>
+
+      <div class="tab-panel" id="tab-plans">
+        <p class="sub" style="margin-top:-8px;">Esses preços ficam disponíveis publicamente (leitura) via Supabase, prontos pra sua página de vendas consumir. Pagamento (Mercado Pago) ainda não está conectado — é só cadastro dos planos por enquanto.</p>
+        <div class="plans-grid" id="plans-grid"></div>
+        <div class="empty" id="plans-empty" style="display:none;">Nenhum plano cadastrado ainda.</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="overlay" id="plan-overlay">
+    <div class="modal">
+      <h2 id="plan-modal-title">Novo plano</h2>
+      <form id="plan-form">
+        <input type="hidden" id="p-id">
+        <div class="field"><label>Nome do plano</label><input id="p-name" placeholder="ex: 10 Currículos, Pro" required></div>
+        <div class="field-row">
+          <div class="field"><label>Subtítulo</label><input id="p-subtitle" placeholder="ex: Economize 25%"></div>
+          <div class="field"><label>Selo (opcional)</label><input id="p-badge" placeholder="ex: MAIS POPULAR"></div>
+        </div>
+        <div class="field-row">
+          <div class="field"><label>Preço (R$)</label><input id="p-price" type="number" step="0.01" min="0" placeholder="35.00" required></div>
+          <div class="field"><label>Cobrança</label>
+            <select id="p-period">
+              <option value="one_time">Pagamento único</option>
+              <option value="month">Mensal</option>
+              <option value="year">Anual</option>
+            </select>
+          </div>
+        </div>
+        <div class="field"><label>Texto do botão</label><input id="p-cta" placeholder="Criar conta grátis"></div>
+        <div class="field"><label>Itens da lista (um por linha)</label>
+          <textarea id="p-features" rows="4" style="width:100%;padding:10px 12px;border-radius:9px;border:1px solid var(--line);background:var(--panel-2);color:var(--ink);font-size:14px;font-family:inherit;"></textarea>
+        </div>
+        <label style="display:flex;align-items:center;gap:8px;font-size:13.5px;color:var(--ink-soft);margin-top:4px;">
+          <input type="checkbox" id="p-featured" style="width:auto;"> Destacar como "mais popular"
+        </label>
+        <label style="display:flex;align-items:center;gap:8px;font-size:13.5px;color:var(--ink-soft);margin-top:8px;">
+          <input type="checkbox" id="p-active" checked style="width:auto;"> Plano ativo (visível publicamente)
+        </label>
+        <div class="modal-actions">
+          <button type="button" class="btn-ghost" id="plan-cancel-btn">Cancelar</button>
+          <button type="submit" class="grad-btn">Salvar plano</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <div class="overlay" id="member-overlay">
+    <div class="modal">
+      <h2 id="modal-title">Novo membro</h2>
+      <form id="member-form">
+        <input type="hidden" id="m-id">
+        <div class="field-row">
+          <div class="field"><label>Nome</label><input id="m-name" placeholder="Nome completo"></div>
+          <div class="field"><label>Status</label>
+            <select id="m-status">
+              <option value="active">Ativo</option>
+              <option value="inactive">Inativo</option>
+              <option value="cancelled">Cancelado</option>
+              <option value="refunded">Reembolsado</option>
+            </select>
+          </div>
+        </div>
+        <div class="field-row">
+          <div class="field"><label>E-mail</label><input id="m-email" type="email" placeholder="email@exemplo.com"></div>
+          <div class="field"><label>WhatsApp</label><input id="m-phone" placeholder="74988259925"></div>
+        </div>
+        <div class="field-row">
+          <div class="field"><label>Origem</label><input id="m-source" placeholder="Hotmart, manual, etc."></div>
+          <div class="field"><label>Validade (dias)</label><input id="m-days" type="number" min="0" placeholder="ex: 30 — vazio = sem validade"></div>
+        </div>
+        <label style="display:flex;align-items:center;gap:8px;font-size:13.5px;color:var(--ink-soft);margin-top:4px;">
+          <input type="checkbox" id="m-tools-enabled" checked style="width:auto;"> Ferramentas liberadas (kill switch)
+        </label>
+        <div class="pw-reveal" id="pw-reveal"></div>
+        <div class="modal-actions">
+          <button type="button" class="btn-ghost" id="regen-pw-btn">Gerar nova senha</button>
+          <button type="button" class="btn-ghost" id="cancel-btn">Cancelar</button>
+          <button type="submit" class="grad-btn" id="save-btn">Salvar</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+<script>
+const $ = (id) => document.getElementById(id);
+let members = [];
+let regenFlag = false;
+
+async function api(path, opts) {
+  const res = await fetch(path, { headers: { 'Content-Type': 'application/json' }, ...opts });
+  if (res.status === 401) { showLogin(); throw new Error('not_authenticated'); }
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok) throw new Error(data.error || 'request_failed');
+  return data;
+}
+
+function showLogin() {
+  $('login-screen').style.display = 'flex';
+  $('app-screen').style.display = 'none';
+}
+function showApp() {
+  $('login-screen').style.display = 'none';
+  $('app-screen').style.display = 'block';
+  loadMembers();
+}
+
+$('login-btn').addEventListener('click', async () => {
+  $('login-err').textContent = '';
+  try {
+    await api('/api/login', { method: 'POST', body: JSON.stringify({ password: $('login-password').value }) });
+    showApp();
+  } catch (e) { $('login-err').textContent = 'Senha incorreta.'; }
+});
+$('login-password').addEventListener('keydown', (e) => { if (e.key === 'Enter') $('login-btn').click(); });
+
+$('logout-btn').addEventListener('click', async () => {
+  await api('/api/logout', { method: 'POST' });
+  showLogin();
+});
+
+function daysLeft(expiresAt) {
+  if (!expiresAt) return null;
+  return Math.ceil((new Date(expiresAt) - new Date()) / (24 * 60 * 60 * 1000));
+}
+
+function renderStats() {
+  $('stat-total').textContent = members.length;
+  $('stat-active').textContent = members.filter(m => m.status === 'active').length;
+  $('stat-expiring').textContent = members.filter(m => { const d = daysLeft(m.access_expires_at); return d !== null && d >= 0 && d <= 7; }).length;
+  $('stat-expired').textContent = members.filter(m => { const d = daysLeft(m.access_expires_at); return d !== null && d < 0; }).length;
+}
+
+function renderTable() {
+  const tbody = $('members-tbody');
+  tbody.innerHTML = '';
+  $('empty-state').style.display = members.length ? 'none' : 'block';
+  for (const m of members) {
+    const d = daysLeft(m.access_expires_at);
+    const expired = d !== null && d < 0;
+    let validadeHtml = '<span class="badge active">Sem validade</span>';
+    if (m.access_expires_at) {
+      validadeHtml = expired
+        ? `<span class="badge expired">Expirou há ${Math.abs(d)}d</span>`
+        : `<span class="badge active">${d}d restantes</span>`;
+    }
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td><strong>${m.display_name || m.buyer_name || '—'}</strong><br><span style="color:var(--ink-soft);font-size:12.5px;">${m.email || '—'}</span></td>
+      <td>${m.phone || '—'}</td>
+      <td><span class="badge ${m.status}">${m.status}</span></td>
+      <td>${validadeHtml}</td>
+      <td>${m.tools_enabled ? '✅' : '🚫'}</td>
+      <td style="white-space:nowrap;">
+        <button class="icon-btn" data-edit="${m.id}">Editar</button>
+        <button class="icon-btn danger" data-del="${m.id}">Excluir</button>
+      </td>`;
+    tbody.appendChild(tr);
+  }
+  tbody.querySelectorAll('[data-edit]').forEach(b => b.addEventListener('click', () => openEdit(b.dataset.edit)));
+  tbody.querySelectorAll('[data-del]').forEach(b => b.addEventListener('click', () => delMember(b.dataset.del)));
+}
+
+async function loadMembers() {
+  members = await api('/api/members');
+  renderStats();
+  renderTable();
+}
+
+function openNew() {
+  $('modal-title').textContent = 'Novo membro';
+  $('member-form').reset();
+  $('m-id').value = '';
+  $('m-tools-enabled').checked = true;
+  $('pw-reveal').classList.remove('show');
+  regenFlag = false;
+  $('member-overlay').classList.add('show');
+}
+
+function openEdit(id) {
+  const m = members.find(x => x.id === id);
+  if (!m) return;
+  $('modal-title').textContent = 'Editar membro';
+  $('m-id').value = m.id;
+  $('m-name').value = m.display_name || m.buyer_name || '';
+  $('m-status').value = m.status;
+  $('m-email').value = m.email || '';
+  $('m-phone').value = m.phone || '';
+  $('m-source').value = m.source || '';
+  $('m-days').value = m.access_days || '';
+  $('m-tools-enabled').checked = !!m.tools_enabled;
+  $('pw-reveal').classList.remove('show');
+  regenFlag = false;
+  $('member-overlay').classList.add('show');
+}
+
+$('new-member-btn').addEventListener('click', openNew);
+$('cancel-btn').addEventListener('click', () => $('member-overlay').classList.remove('show'));
+$('regen-pw-btn').addEventListener('click', () => { regenFlag = true; $('save-btn').click(); });
+
+async function delMember(id) {
+  if (!confirm('Excluir esse membro? Isso remove o acesso dele imediatamente.')) return;
+  await api('/api/members/' + id, { method: 'DELETE' });
+  await loadMembers();
+}
+
+$('member-form').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const id = $('m-id').value;
+  const payload = {
+    display_name: $('m-name').value || null,
+    status: $('m-status').value,
+    email: $('m-email').value || null,
+    phone: $('m-phone').value || null,
+    source: $('m-source').value || null,
+    access_days: $('m-days').value ? parseInt($('m-days').value, 10) : null,
+    tools_enabled: $('m-tools-enabled').checked,
+  };
+  let result;
+  if (id) {
+    if (regenFlag) payload.regenerate_password = true;
+    result = await api('/api/members/' + id, { method: 'PATCH', body: JSON.stringify(payload) });
+  } else {
+    result = await api('/api/members', { method: 'POST', body: JSON.stringify(payload) });
+  }
+  regenFlag = false;
+  if (result.generated_password) {
+    $('pw-reveal').classList.add('show');
+    $('pw-reveal').innerHTML = `<strong>Senha gerada:</strong> ${result.generated_password}<br><span style="color:var(--ink-soft);font-size:12px;">Copie agora — não é possível ver de novo depois.</span>`;
+  } else {
+    $('member-overlay').classList.remove('show');
+  }
+  await loadMembers();
+});
+
+// ---- Tabs ----
+let activeTab = 'members';
+document.querySelectorAll('.tab-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    activeTab = btn.dataset.tab;
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.toggle('active', b === btn));
+    $('tab-members').classList.toggle('active', activeTab === 'members');
+    $('tab-plans').classList.toggle('active', activeTab === 'plans');
+    $('tab-new-btn').textContent = activeTab === 'members' ? '+ Novo membro' : '+ Novo plano';
+    if (activeTab === 'plans') loadPlans();
+  });
+});
+$('tab-new-btn').addEventListener('click', () => { if (activeTab === 'members') openNew(); else openPlanNew(); });
+
+// ---- Plans ----
+let plans = [];
+const BRL = (cents) => (cents / 100).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+const PERIOD_LABEL = { one_time: '', month: '/mês', year: '/ano' };
+
+async function loadPlans() {
+  plans = await api('/api/plans');
+  renderPlans();
+}
+
+function renderPlans() {
+  const grid = $('plans-grid');
+  grid.innerHTML = '';
+  $('plans-empty').style.display = plans.length ? 'none' : 'block';
+  for (const p of plans) {
+    const card = document.createElement('div');
+    card.className = 'plan-card' + (p.is_featured ? ' featured' : '') + (p.is_active ? '' : ' inactive');
+    const features = Array.isArray(p.features) ? p.features : [];
+    card.innerHTML = `
+      ${p.badge ? `<span class="badge-pop">${p.badge}</span>` : ''}
+      <div class="p-name">${p.name}</div>
+      <div class="p-sub">${p.subtitle || ''}</div>
+      <div class="p-price">${BRL(p.price_cents)}</div>
+      <div class="p-period">${PERIOD_LABEL[p.billing_period] || ''}</div>
+      <ul class="p-features">${features.map(f => `<li>✓ ${f}</li>`).join('')}</ul>
+      <div class="p-actions">
+        <button class="icon-btn" data-pedit="${p.id}">Editar</button>
+        <button class="icon-btn danger" data-pdel="${p.id}">Excluir</button>
+      </div>`;
+    grid.appendChild(card);
+  }
+  grid.querySelectorAll('[data-pedit]').forEach(b => b.addEventListener('click', () => openPlanEdit(b.dataset.pedit)));
+  grid.querySelectorAll('[data-pdel]').forEach(b => b.addEventListener('click', () => delPlan(b.dataset.pdel)));
+}
+
+function openPlanNew() {
+  $('plan-modal-title').textContent = 'Novo plano';
+  $('plan-form').reset();
+  $('p-id').value = '';
+  $('p-active').checked = true;
+  $('plan-overlay').classList.add('show');
+}
+
+function openPlanEdit(id) {
+  const p = plans.find(x => x.id === id);
+  if (!p) return;
+  $('plan-modal-title').textContent = 'Editar plano';
+  $('p-id').value = p.id;
+  $('p-name').value = p.name;
+  $('p-subtitle').value = p.subtitle || '';
+  $('p-badge').value = p.badge || '';
+  $('p-price').value = (p.price_cents / 100).toFixed(2);
+  $('p-period').value = p.billing_period || 'one_time';
+  $('p-cta').value = p.cta_label || '';
+  $('p-features').value = (Array.isArray(p.features) ? p.features : []).join('\n');
+  $('p-featured').checked = !!p.is_featured;
+  $('p-active').checked = !!p.is_active;
+  $('plan-overlay').classList.add('show');
+}
+
+$('plan-cancel-btn').addEventListener('click', () => $('plan-overlay').classList.remove('show'));
+
+async function delPlan(id) {
+  if (!confirm('Excluir esse plano?')) return;
+  await api('/api/plans/' + id, { method: 'DELETE' });
+  await loadPlans();
+}
+
+$('plan-form').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const id = $('p-id').value;
+  const payload = {
+    name: $('p-name').value,
+    subtitle: $('p-subtitle').value || null,
+    badge: $('p-badge').value || null,
+    price_cents: Math.round(parseFloat($('p-price').value || '0') * 100),
+    billing_period: $('p-period').value,
+    cta_label: $('p-cta').value || 'Criar conta grátis',
+    features: $('p-features').value.split('\n').map(s => s.trim()).filter(Boolean),
+    is_featured: $('p-featured').checked,
+    is_active: $('p-active').checked,
+  };
+  if (id) await api('/api/plans/' + id, { method: 'PATCH', body: JSON.stringify(payload) });
+  else await api('/api/plans', { method: 'POST', body: JSON.stringify(payload) });
+  $('plan-overlay').classList.remove('show');
+  await loadPlans();
+});
+
+(async () => {
+  try {
+    const s = await api('/api/session');
+    if (s.authed) showApp(); else showLogin();
+  } catch (e) { showLogin(); }
+})();
+</script>
+</body>
+</html>
