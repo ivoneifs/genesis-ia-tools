@@ -7,7 +7,7 @@
  * the tool ships zero backend infrastructure information.
  */
 window.APP_CONFIG = {
-  n8nWebhookBase: 'https://n8n.srv1268751.hstgr.cloud/webhook',
+  n8nWebhookBase: 'https://admin.appsbrasil.store/api',
 
   // Optional anti-oracle CAPTCHA on the membership gate (COR-021). Leave empty to
   // disable — server-side rate limiting in n8n is the floor either way. When set

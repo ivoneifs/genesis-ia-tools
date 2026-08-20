@@ -7,5 +7,5 @@
  * the tool ships zero backend infrastructure information.
  */
 window.APP_CONFIG = {
-  n8nWebhookBase: 'https://n8n.srv1268751.hstgr.cloud/webhook'
+  n8nWebhookBase: 'https://admin.appsbrasil.store/api'
 };
