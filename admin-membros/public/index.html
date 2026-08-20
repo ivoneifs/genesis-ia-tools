@@ -377,6 +377,8 @@ const MEMBER_ERR_MSG = {
   email_or_phone_required: 'Preencha pelo menos e-mail ou WhatsApp — o sistema de acesso precisa de um dos dois pra identificar o membro.',
   no_fields: 'Nada foi alterado.',
   not_found: 'Esse membro não existe mais (pode ter sido excluído).',
+  duplicate_email_or_phone: 'Já existe um membro cadastrado com esse e-mail ou telefone.',
+  internal_error: 'Erro interno ao salvar. Tenta de novo — se persistir, me avisa.',
 };
 
 $('member-form').addEventListener('submit', async (e) => {

@@ -15,6 +15,7 @@ if (!ADMIN_PANEL_PASSWORD || !SESSION_SECRET || !DATABASE_URL) {
 }
 
 const pool = new Pool({ connectionString: DATABASE_URL, ssl: { rejectUnauthorized: false } });
+pool.on('error', (err) => console.error('Idle pg client error (pool kept alive):', err.message));
 
 const app = express();
 app.use(express.json());
@@ -29,6 +30,13 @@ app.use(cookieSession({
 function requireAuth(req, res, next) {
   if (req.session && req.session.authed) return next();
   return res.status(401).json({ error: 'not_authenticated' });
+}
+
+// Wraps an async route handler so any rejected promise (bad SQL, constraint
+// violation, network blip) becomes a clean JSON error response instead of an
+// unhandled rejection that can crash the process.
+function ah(fn) {
+  return (req, res, next) => Promise.resolve(fn(req, res, next)).catch(next);
 }
 
 function genPassword() {
@@ -53,16 +61,16 @@ app.get('/api/session', (req, res) => {
   res.json({ authed: !!(req.session && req.session.authed) });
 });
 
-app.get('/api/members', requireAuth, async (req, res) => {
+app.get('/api/members', requireAuth, ah(async (req, res) => {
   const { rows } = await pool.query(
     `select id, email, phone, buyer_name, display_name, status, tools_enabled,
             source, access_days, access_expires_at, created_at, updated_at
      from public.members order by created_at desc limit 500`
   );
   res.json(rows);
-});
+}));
 
-app.post('/api/members', requireAuth, async (req, res) => {
+app.post('/api/members', requireAuth, ah(async (req, res) => {
   const { email, phone, buyer_name, display_name, status, source, access_days } = req.body || {};
   if (!email && !phone) return res.status(400).json({ error: 'email_or_phone_required' });
 
@@ -78,9 +86,9 @@ app.post('/api/members', requireAuth, async (req, res) => {
     [email || null, phone || null, buyer_name || null, display_name || null, status || null, source || null, passwordHash, days, expiresAt]
   );
   res.json({ ...rows[0], generated_password: plainPassword });
-});
+}));
 
-app.patch('/api/members/:id', requireAuth, async (req, res) => {
+app.patch('/api/members/:id', requireAuth, ah(async (req, res) => {
   const { id } = req.params;
   const { email, phone, buyer_name, display_name, status, tools_enabled, source, access_days, regenerate_password } = req.body || {};
 
@@ -120,23 +128,23 @@ app.patch('/api/members/:id', requireAuth, async (req, res) => {
   );
   if (!rows[0]) return res.status(404).json({ error: 'not_found' });
   res.json({ ...rows[0], generated_password: plainPassword });
-});
+}));
 
-app.delete('/api/members/:id', requireAuth, async (req, res) => {
+app.delete('/api/members/:id', requireAuth, ah(async (req, res) => {
   await pool.query('delete from public.members where id = $1', [req.params.id]);
   res.json({ ok: true });
-});
+}));
 
-app.get('/api/plans', requireAuth, async (req, res) => {
+app.get('/api/plans', requireAuth, ah(async (req, res) => {
   const { rows } = await pool.query(
     `select id, name, subtitle, badge, price_cents, currency, billing_period, cta_label,
             features, is_featured, is_active, sort_order, mp_preference_id, created_at, updated_at
      from public.pricing_plans order by sort_order asc, created_at asc`
   );
   res.json(rows);
-});
+}));
 
-app.post('/api/plans', requireAuth, async (req, res) => {
+app.post('/api/plans', requireAuth, ah(async (req, res) => {
   const { name, subtitle, badge, price_cents, billing_period, cta_label, features, is_featured, is_active, sort_order } = req.body || {};
   if (!name) return res.status(400).json({ error: 'name_required' });
   const { rows } = await pool.query(
@@ -147,9 +155,9 @@ app.post('/api/plans', requireAuth, async (req, res) => {
      JSON.stringify(features || []), !!is_featured, is_active === undefined ? true : !!is_active, sort_order || 0]
   );
   res.json(rows[0]);
-});
+}));
 
-app.patch('/api/plans/:id', requireAuth, async (req, res) => {
+app.patch('/api/plans/:id', requireAuth, ah(async (req, res) => {
   const { id } = req.params;
   const { name, subtitle, badge, price_cents, billing_period, cta_label, features, is_featured, is_active, sort_order } = req.body || {};
   const fields = [];
@@ -176,14 +184,27 @@ app.patch('/api/plans/:id', requireAuth, async (req, res) => {
   );
   if (!rows[0]) return res.status(404).json({ error: 'not_found' });
   res.json(rows[0]);
-});
+}));
 
-app.delete('/api/plans/:id', requireAuth, async (req, res) => {
+app.delete('/api/plans/:id', requireAuth, ah(async (req, res) => {
   await pool.query('delete from public.pricing_plans where id = $1', [req.params.id]);
   res.json({ ok: true });
-});
+}));
 
 app.use(express.static(path.join(__dirname, 'public')));
+
+// Central error handler — must be registered last. Any error passed to next()
+// (including from the ah() wrapper) lands here instead of crashing the process
+// or leaking a raw stack trace to the client.
+app.use((err, req, res, next) => {
+  console.error('Request error:', err);
+  if (err && err.code === '23505') {
+    return res.status(409).json({ error: 'duplicate_email_or_phone' });
+  }
+  res.status(500).json({ error: 'internal_error' });
+});
+
+process.on('unhandledRejection', (err) => console.error('Unhandled rejection (process kept alive):', err));
 
 const port = process.env.PORT || 3000;
 app.listen(port, () => console.log(`admin-membros listening on ${port}`));
