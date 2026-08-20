@@ -233,6 +233,7 @@ app.delete('/api/members/:id', requireAuth, ah(async (req, res) => {
 app.get('/api/plans', requireAuth, ah(async (req, res) => {
   const { rows } = await pool.query(
     `select id, name, subtitle, badge, price_cents, currency, billing_period, cta_label,
+            price_month_cents, price_semester_cents, price_year_cents,
             features, is_featured, is_active, sort_order, mp_preference_id, created_at, updated_at
      from public.pricing_plans order by sort_order asc, created_at asc`
   );
@@ -240,21 +241,26 @@ app.get('/api/plans', requireAuth, ah(async (req, res) => {
 }));
 
 app.post('/api/plans', requireAuth, ah(async (req, res) => {
-  const { name, subtitle, badge, price_cents, billing_period, cta_label, features, is_featured, is_active, sort_order } = req.body || {};
+  const { name, subtitle, badge, price_cents, billing_period, cta_label, features, is_featured, is_active, sort_order,
+          price_month_cents, price_semester_cents, price_year_cents } = req.body || {};
   if (!name) return res.status(400).json({ error: 'name_required' });
   const { rows } = await pool.query(
-    `insert into public.pricing_plans (name, subtitle, badge, price_cents, billing_period, cta_label, features, is_featured, is_active, sort_order)
-     values ($1,$2,$3,$4,coalesce($5,'one_time'),coalesce($6,'Criar conta grátis'),coalesce($7,'[]'::jsonb),coalesce($8,false),coalesce($9,true),coalesce($10,0))
+    `insert into public.pricing_plans
+       (name, subtitle, badge, price_cents, billing_period, cta_label, features, is_featured, is_active, sort_order,
+        price_month_cents, price_semester_cents, price_year_cents)
+     values ($1,$2,$3,$4,coalesce($5,'one_time'),coalesce($6,'Criar conta grátis'),coalesce($7,'[]'::jsonb),coalesce($8,false),coalesce($9,true),coalesce($10,0),$11,$12,$13)
      returning *`,
     [name, subtitle || null, badge || null, price_cents || 0, billing_period || null, cta_label || null,
-     JSON.stringify(features || []), !!is_featured, is_active === undefined ? true : !!is_active, sort_order || 0]
+     JSON.stringify(features || []), !!is_featured, is_active === undefined ? true : !!is_active, sort_order || 0,
+     price_month_cents || null, price_semester_cents || null, price_year_cents || null]
   );
   res.json(rows[0]);
 }));
 
 app.patch('/api/plans/:id', requireAuth, ah(async (req, res) => {
   const { id } = req.params;
-  const { name, subtitle, badge, price_cents, billing_period, cta_label, features, is_featured, is_active, sort_order } = req.body || {};
+  const { name, subtitle, badge, price_cents, billing_period, cta_label, features, is_featured, is_active, sort_order,
+          price_month_cents, price_semester_cents, price_year_cents } = req.body || {};
   const fields = [];
   const values = [];
   let i = 1;
@@ -270,6 +276,9 @@ app.patch('/api/plans/:id', requireAuth, ah(async (req, res) => {
   if (is_featured !== undefined) set('is_featured', !!is_featured);
   if (is_active !== undefined) set('is_active', !!is_active);
   if (sort_order !== undefined) set('sort_order', sort_order);
+  if (price_month_cents !== undefined) set('price_month_cents', price_month_cents || null);
+  if (price_semester_cents !== undefined) set('price_semester_cents', price_semester_cents || null);
+  if (price_year_cents !== undefined) set('price_year_cents', price_year_cents || null);
 
   if (fields.length === 0) return res.status(400).json({ error: 'no_fields' });
   values.push(id);

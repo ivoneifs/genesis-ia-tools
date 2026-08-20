@@ -101,6 +101,9 @@
   .plan-card .p-sub{font-size:12.5px;color:var(--ink-soft);margin-bottom:14px;}
   .plan-card .p-price{font-size:28px;font-weight:800;}
   .plan-card .p-period{font-size:12.5px;color:var(--ink-soft);}
+  .plan-card .p-multi-price{margin:8px 0 4px;border-top:1px solid var(--line);border-bottom:1px solid var(--line);padding:8px 0;}
+  .plan-card .p-price-row{display:flex;justify-content:space-between;align-items:baseline;padding:4px 0;font-size:13px;color:var(--ink-soft);}
+  .plan-card .p-price-row strong{color:var(--ink);font-size:15px;}
   .plan-card .p-features{list-style:none;padding:0;margin:14px 0;font-size:13px;color:var(--ink-soft);}
   .plan-card .p-features li{padding:4px 0;}
   .plan-card .p-actions{display:flex;gap:8px;margin-top:14px;}
@@ -209,7 +212,15 @@
             </select>
           </div>
         </div>
-        <div class="field"><label>Texto do botão</label><input id="p-cta" placeholder="Criar conta grátis"></div>
+        <p class="sub" style="margin:0 0 8px;">Opcional: mostrar mensal, semestral e anual lado a lado no card (deixe em branco o que não usar)</p>
+        <div class="field-row">
+          <div class="field"><label>Mensal (R$)</label><input id="p-price-month" type="number" step="0.01" min="0" placeholder="ex: 49.90"></div>
+          <div class="field"><label>Semestral (R$)</label><input id="p-price-semester" type="number" step="0.01" min="0" placeholder="ex: 249.90"></div>
+        </div>
+        <div class="field-row">
+          <div class="field"><label>Anual (R$)</label><input id="p-price-year" type="number" step="0.01" min="0" placeholder="ex: 449.90"></div>
+          <div class="field"><label>Texto do botão</label><input id="p-cta" placeholder="Criar conta grátis"></div>
+        </div>
         <div class="field"><label>Itens da lista (um por linha)</label>
           <textarea id="p-features" rows="4" style="width:100%;padding:10px 12px;border-radius:9px;border:1px solid var(--line);background:var(--panel-2);color:var(--ink);font-size:14px;font-family:inherit;"></textarea>
         </div>
@@ -535,12 +546,19 @@ function renderPlans() {
     const card = document.createElement('div');
     card.className = 'plan-card' + (p.is_featured ? ' featured' : '') + (p.is_active ? '' : ' inactive');
     const features = Array.isArray(p.features) ? p.features : [];
+    const hasMultiPrice = p.price_month_cents || p.price_semester_cents || p.price_year_cents;
+    const priceBlock = hasMultiPrice
+      ? `<div class="p-multi-price">
+          ${p.price_month_cents ? `<div class="p-price-row"><span>Mensal</span><strong>${BRL(p.price_month_cents)}</strong></div>` : ''}
+          ${p.price_semester_cents ? `<div class="p-price-row"><span>Semestral</span><strong>${BRL(p.price_semester_cents)}</strong></div>` : ''}
+          ${p.price_year_cents ? `<div class="p-price-row"><span>Anual</span><strong>${BRL(p.price_year_cents)}</strong></div>` : ''}
+        </div>`
+      : `<div class="p-price">${BRL(p.price_cents)}</div><div class="p-period">${PERIOD_LABEL[p.billing_period] || ''}</div>`;
     card.innerHTML = `
       ${p.badge ? `<span class="badge-pop">${p.badge}</span>` : ''}
       <div class="p-name">${p.name}</div>
       <div class="p-sub">${p.subtitle || ''}</div>
-      <div class="p-price">${BRL(p.price_cents)}</div>
-      <div class="p-period">${PERIOD_LABEL[p.billing_period] || ''}</div>
+      ${priceBlock}
       <ul class="p-features">${features.map(f => `<li>✓ ${f}</li>`).join('')}</ul>
       <div class="p-actions">
         <button class="icon-btn" data-pedit="${p.id}">Editar</button>
@@ -570,6 +588,9 @@ function openPlanEdit(id) {
   $('p-badge').value = p.badge || '';
   $('p-price').value = (p.price_cents / 100).toFixed(2);
   $('p-period').value = p.billing_period || 'one_time';
+  $('p-price-month').value = p.price_month_cents ? (p.price_month_cents / 100).toFixed(2) : '';
+  $('p-price-semester').value = p.price_semester_cents ? (p.price_semester_cents / 100).toFixed(2) : '';
+  $('p-price-year').value = p.price_year_cents ? (p.price_year_cents / 100).toFixed(2) : '';
   $('p-cta').value = p.cta_label || '';
   $('p-features').value = (Array.isArray(p.features) ? p.features : []).join('\n');
   $('p-featured').checked = !!p.is_featured;
@@ -594,6 +615,9 @@ $('plan-form').addEventListener('submit', async (e) => {
     badge: $('p-badge').value || null,
     price_cents: Math.round(parseFloat($('p-price').value || '0') * 100),
     billing_period: $('p-period').value,
+    price_month_cents: $('p-price-month').value ? Math.round(parseFloat($('p-price-month').value) * 100) : null,
+    price_semester_cents: $('p-price-semester').value ? Math.round(parseFloat($('p-price-semester').value) * 100) : null,
+    price_year_cents: $('p-price-year').value ? Math.round(parseFloat($('p-price-year').value) * 100) : null,
     cta_label: $('p-cta').value || 'Criar conta grátis',
     features: $('p-features').value.split('\n').map(s => s.trim()).filter(Boolean),
     is_featured: $('p-featured').checked,
