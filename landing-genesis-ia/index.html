@@ -162,6 +162,29 @@
     font-family:var(--mono);
   }
 
+  /* PRICING */
+  .pricing-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:18px;max-width:960px;margin:0 auto;}
+  .price-card{
+    background:var(--paper-3);border:1px solid var(--line);border-radius:var(--radius);
+    padding:26px;position:relative;transition:transform .15s ease, box-shadow .15s ease;
+  }
+  .price-card:hover{transform:translateY(-3px);box-shadow:0 14px 28px -18px rgba(33,26,16,.4);}
+  .price-card.featured{border-color:var(--accent);box-shadow:0 0 0 1px var(--accent);}
+  .price-card .p-badge{
+    position:absolute;top:-11px;left:24px;background:linear-gradient(90deg,var(--dawn-2),var(--accent-dark));
+    color:#fff;font-size:10.5px;font-weight:800;padding:4px 12px;border-radius:999px;letter-spacing:.03em;
+  }
+  .price-card h3{font-family:var(--serif);font-size:19px;margin:6px 0 2px;font-weight:600;}
+  .price-card .p-sub{font-size:13px;color:var(--ink-soft);margin:0 0 16px;}
+  .price-card .p-row{display:flex;justify-content:space-between;align-items:baseline;padding:9px 0;border-top:1px solid var(--line-soft);font-size:13.5px;color:var(--ink-soft);}
+  .price-card .p-row:first-of-type{border-top:none;}
+  .price-card .p-row strong{color:var(--ink);font-size:17px;font-family:var(--serif);}
+  .price-card .p-single{font-size:32px;font-weight:700;font-family:var(--serif);margin:4px 0;}
+  .price-card .p-period{font-size:12.5px;color:var(--ink-faint);margin-bottom:16px;}
+  .price-card ul{list-style:none;padding:0;margin:16px 0 20px;font-size:13px;color:var(--ink-soft);}
+  .price-card ul li{padding:4px 0;}
+  .price-card .btn-primary{display:block;text-align:center;width:100%;box-sizing:border-box;}
+
   /* HOW IT WORKS */
   .steps{display:grid;grid-template-columns:repeat(3,1fr);gap:30px;}
   .step{text-align:left;}
@@ -344,6 +367,19 @@
     </div>
   </section>
 
+  <section class="section" id="precos" style="padding-top:0;">
+    <div class="wrap">
+      <div class="section-head">
+        <span class="kicker"><span class="dot"></span> Planos</span>
+        <h2>Escolha como quer acessar</h2>
+        <p>Mensal, semestral ou anual — quanto maior o período, maior o desconto.</p>
+      </div>
+      <div class="pricing-grid" id="pricing-grid">
+        <p style="text-align:center;color:var(--ink-faint);grid-column:1/-1;">Carregando planos…</p>
+      </div>
+    </div>
+  </section>
+
   <section class="section" style="padding-top:0;">
     <div class="wrap">
       <div class="cta-band">
@@ -369,5 +405,50 @@
   <a class="wa-float" href="https://wa.me/5574988259925" target="_blank" rel="noopener noreferrer">💬 WhatsApp</a>
 
   <script>document.getElementById('year').textContent = new Date().getFullYear();</script>
+  <script>
+  (async () => {
+    const SUPABASE_URL = 'https://oybpviayfbqrfqcjzzyj.supabase.co';
+    const SUPABASE_ANON_KEY = 'sb_publishable_MAlvN9pTWjHPaCY8fORxaQ_tavt4Rzm';
+    const BRL = (cents) => (cents / 100).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+    const grid = document.getElementById('pricing-grid');
+
+    try {
+      const res = await fetch(
+        `${SUPABASE_URL}/rest/v1/pricing_plans?is_active=eq.true&order=sort_order.asc`,
+        { headers: { apikey: SUPABASE_ANON_KEY, Authorization: `Bearer ${SUPABASE_ANON_KEY}` } }
+      );
+      if (!res.ok) throw new Error('fetch failed');
+      const plans = await res.json();
+
+      if (!plans.length) {
+        document.getElementById('precos').style.display = 'none';
+        return;
+      }
+
+      grid.innerHTML = plans.map(p => {
+        const features = Array.isArray(p.features) ? p.features : [];
+        const hasMulti = p.price_month_cents || p.price_semester_cents || p.price_year_cents;
+        const priceBlock = hasMulti
+          ? `<div style="margin:8px 0 4px;">
+              ${p.price_month_cents ? `<div class="p-row"><span>Mensal</span><strong>${BRL(p.price_month_cents)}</strong></div>` : ''}
+              ${p.price_semester_cents ? `<div class="p-row"><span>Semestral</span><strong>${BRL(p.price_semester_cents)}</strong></div>` : ''}
+              ${p.price_year_cents ? `<div class="p-row"><span>Anual</span><strong>${BRL(p.price_year_cents)}</strong></div>` : ''}
+            </div>`
+          : `<div class="p-single">${BRL(p.price_cents)}</div><div class="p-period">${{month:'/mês',year:'/ano'}[p.billing_period] || ''}</div>`;
+        return `
+          <div class="price-card${p.is_featured ? ' featured' : ''}">
+            ${p.badge ? `<span class="p-badge">${p.badge}</span>` : ''}
+            <h3>${p.name}</h3>
+            <p class="p-sub">${p.subtitle || ''}</p>
+            ${priceBlock}
+            <ul>${features.map(f => `<li>✓ ${f}</li>`).join('')}</ul>
+            <a class="btn-primary" href="https://comunidade-genesisia.appsbrasil.store" target="_blank" rel="noopener noreferrer">${p.cta_label || 'Criar conta grátis'}</a>
+          </div>`;
+      }).join('');
+    } catch (e) {
+      document.getElementById('precos').style.display = 'none';
+    }
+  })();
+  </script>
 </body>
 </html>
