@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Entrar — Comunidade Gênesis IA</title>
+<style>
+  :root{
+    --bg:#0a0a12; --panel:#12121a; --field:#181822;
+    --line:#25253a; --ink:#f2f2fa; --ink-soft:#9b9bb8;
+    --accent-1:#7c5cff; --accent-2:#ff5ca8;
+    --bad:#ff6b7a;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;min-height:100vh;background:var(--bg);color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;
+    display:flex;align-items:center;justify-content:center;padding:24px;
+    position:relative;overflow:hidden;
+  }
+  body::before{
+    content:"";position:fixed;top:-20%;left:50%;transform:translateX(-50%);
+    width:900px;height:500px;background:radial-gradient(ellipse, rgba(124,92,255,.18), transparent 70%);
+    pointer-events:none;
+  }
+  .card{
+    position:relative;background:var(--panel);border:1px solid var(--line);border-radius:22px;
+    padding:36px;max-width:420px;width:100%;
+  }
+  .close{position:absolute;top:20px;right:22px;background:none;border:none;color:var(--ink-soft);font-size:20px;cursor:pointer;line-height:1;}
+  .close:hover{color:var(--ink);}
+
+  .brand{text-align:center;margin-bottom:24px;}
+  .brand .sun{width:26px;height:26px;border-radius:50%;margin:0 auto 8px;background:radial-gradient(circle at 32% 28%, #f6d9a6, var(--accent-2) 60%, var(--accent-1) 100%);}
+  .brand h1{font-size:16px;margin:0;font-weight:700;letter-spacing:-.01em;}
+  .brand p{margin:2px 0 0;font-size:12.5px;color:var(--ink-soft);}
+
+  .tabs{display:flex;background:var(--field);border-radius:999px;padding:5px;margin-bottom:26px;}
+  .tab{
+    flex:1;text-align:center;padding:12px 0;border-radius:999px;font-weight:700;font-size:14.5px;
+    cursor:pointer;color:var(--ink-soft);transition:.15s ease;background:none;border:none;
+  }
+  .tab.active{background:linear-gradient(90deg,var(--accent-1),var(--accent-2));color:#fff;}
+
+  .field{margin-bottom:18px;}
+  .field label{display:block;font-size:13.5px;font-weight:600;margin-bottom:8px;}
+  .field input{
+    width:100%;padding:13px 15px;border-radius:12px;border:1px solid var(--line);
+    background:var(--field);color:var(--ink);font-size:14.5px;
+  }
+  .field input:focus{outline:none;border-color:var(--accent-1);}
+  .field input::placeholder{color:#55556e;}
+
+  .submit-btn{
+    width:100%;padding:15px 0;border:none;border-radius:12px;
+    background:linear-gradient(90deg,var(--accent-1),var(--accent-2));
+    color:#fff;font-size:15px;font-weight:700;cursor:pointer;margin-top:4px;
+    transition:transform .15s ease, opacity .15s ease;
+  }
+  .submit-btn:hover{transform:translateY(-1px);}
+  .submit-btn:disabled{opacity:.55;cursor:not-allowed;transform:none;}
+
+  .err{color:var(--bad);font-size:13px;min-height:16px;margin:-6px 0 12px;}
+  .foot{text-align:center;font-size:12px;color:#55556e;margin-top:18px;}
+
+  .welcome{display:none;text-align:center;}
+  .welcome .sun{width:40px;height:40px;border-radius:50%;margin:0 auto 16px;background:radial-gradient(circle at 32% 28%, #f6d9a6, var(--accent-2) 60%, var(--accent-1) 100%);}
+  .welcome h2{font-size:19px;margin:0 0 6px;}
+  .welcome p{color:var(--ink-soft);font-size:14px;margin:0 0 24px;}
+</style>
+</head>
+<body>
+  <div class="card">
+    <button class="close" onclick="history.back()" aria-label="Fechar">✕</button>
+
+    <div id="auth-view">
+      <div class="brand">
+        <div class="sun"></div>
+        <h1>Comunidade Gênesis IA</h1>
+        <p>Acesse suas ferramentas de IA</p>
+      </div>
+
+      <div class="tabs">
+        <button class="tab active" data-mode="login" id="tab-login">Entrar</button>
+        <button class="tab" data-mode="register" id="tab-register">Criar conta</button>
+      </div>
+
+      <form id="auth-form">
+        <div class="field" id="field-name" style="display:none;">
+          <label>Nome</label>
+          <input id="f-name" placeholder="Seu nome" autocomplete="name">
+        </div>
+        <div class="field">
+          <label>Email</label>
+          <input id="f-email" type="email" placeholder="seu@email.com" autocomplete="email" required>
+        </div>
+        <div class="field">
+          <label>Senha</label>
+          <input id="f-password" type="password" placeholder="••••••••" autocomplete="current-password" required>
+        </div>
+        <div class="err" id="form-err"></div>
+        <button type="submit" class="submit-btn" id="submit-btn">Entrar</button>
+      </form>
+      <p class="foot" id="form-foot">Ainda não é membro? Clique em "Criar conta" acima.</p>
+    </div>
+
+    <div class="welcome" id="welcome-view">
+      <div class="sun"></div>
+      <h2 id="welcome-name">Bem-vindo!</h2>
+      <p>Seu acesso está liberado. Volte a qualquer uma das ferramentas — o login já fica salvo.</p>
+      <button class="submit-btn" id="logout-btn">Sair</button>
+    </div>
+  </div>
+
+<script>
+const $ = (id) => document.getElementById(id);
+let mode = 'login';
+
+function setMode(m) {
+  mode = m;
+  $('tab-login').classList.toggle('active', m === 'login');
+  $('tab-register').classList.toggle('active', m === 'register');
+  $('field-name').style.display = m === 'register' ? 'block' : 'none';
+  $('f-password').autocomplete = m === 'register' ? 'new-password' : 'current-password';
+  $('submit-btn').textContent = m === 'register' ? 'Criar conta' : 'Entrar';
+  $('form-foot').textContent = m === 'register'
+    ? 'Já tem conta? Clique em "Entrar" acima.'
+    : 'Ainda não é membro? Clique em "Criar conta" acima.';
+  $('form-err').textContent = '';
+}
+$('tab-login').addEventListener('click', () => setMode('login'));
+$('tab-register').addEventListener('click', () => setMode('register'));
+
+const ERR_MSG = {
+  invalid_email: 'Digite um e-mail válido.',
+  weak_password: 'A senha precisa ter pelo menos 6 caracteres.',
+  email_already_registered: 'Esse e-mail já está cadastrado — tenta entrar em vez de criar conta.',
+  invalid_credentials: 'E-mail ou senha incorretos.',
+  inactive: 'Seu acesso está inativo. Fale com o suporte.',
+  missing_credentials: 'Preencha e-mail e senha.',
+};
+
+async function api(path, opts) {
+  const res = await fetch(path, { headers: { 'Content-Type': 'application/json' }, ...opts });
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok) throw new Error(data.error || 'request_failed');
+  return data;
+}
+
+function showWelcome(member) {
+  $('auth-view').style.display = 'none';
+  $('welcome-view').style.display = 'block';
+  $('welcome-name').textContent = member.display_name ? `Bem-vindo, ${member.display_name}!` : 'Bem-vindo!';
+}
+function showAuth() {
+  $('auth-view').style.display = 'block';
+  $('welcome-view').style.display = 'none';
+}
+
+$('auth-form').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  $('form-err').textContent = '';
+  $('submit-btn').disabled = true;
+  try {
+    const email = $('f-email').value;
+    const password = $('f-password').value;
+    let result;
+    if (mode === 'register') {
+      result = await api('/api/register', { method: 'POST', body: JSON.stringify({ email, password, display_name: $('f-name').value || null }) });
+    } else {
+      result = await api('/api/login', { method: 'POST', body: JSON.stringify({ email, password }) });
+    }
+    showWelcome(result.member);
+  } catch (err) {
+    $('form-err').textContent = ERR_MSG[err.message] || ('Erro: ' + err.message);
+  } finally {
+    $('submit-btn').disabled = false;
+  }
+});
+
+$('logout-btn').addEventListener('click', async () => {
+  await api('/api/logout', { method: 'POST' });
+  showAuth();
+});
+
+(async () => {
+  try {
+    const s = await api('/api/session');
+    if (s.authed) showWelcome(s.member);
+  } catch (e) {}
+})();
+</script>
+</body>
+</html>
